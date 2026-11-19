@@ -3,6 +3,8 @@ const KEYS=[["learnt","Learnt"],["revised","Revised"],["pyq","PYQ"]];
 const R=[46,36,26],W=7,C=R.map(r=>2*Math.PI*r);
 const CONTACT="The syllabus is fixed and can’t be edited here. To request a change, contact Jeoff.";
 const CHECK='<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M4.5 10.5l3.7 3.7L15.5 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const RELOAD='<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M16 10a6 6 0 1 1-1.8-4.3M16 3.5v3.8h-3.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const reloadBtn=`<button class="icon-btn" data-reload aria-label="Reload page">${RELOAD}</button>`;
 const CHEV='<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M12.5 4.5L7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 const get=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
@@ -85,7 +87,7 @@ function counts(s){
 }
 function home(){
   const subs=Object.keys(S().subjects);
-  let h=`<div class="top"><h1 tabindex="-1">Academic Tracker</h1><button class="pill" data-change>${label()}<span>Change</span></button></div>`;
+  let h=`<div class="top"><h1 tabindex="-1">Academic Tracker</h1><div class="tools"><button class="pill" data-change>${label()}<span>Change</span></button>${reloadBtn}</div></div>`;
   if(!subs.length){
     app.innerHTML=h+`<div class="empty"><b>Syllabus coming soon</b>The ${label()} syllabus hasn’t been added yet. ${CONTACT}</div>`;
     return;
@@ -117,7 +119,7 @@ function subject(s){
     const d=st(s,ch);
     rows+=`<div class="row${d.learnt&&d.revised&&d.pyq?" done":""}"><span>${i+1}. ${ch}${inEx.includes(ch)?`<small>In the exam on ${fmt(pp.d)}</small>`:""}</span>${KEYS.map(([k,l])=>`<button class="chip" style="--c:var(--${k})" data-t="${k}" data-ch="${ch.replace(/"/g,"&quot;")}" aria-pressed="${!!d[k]}" aria-label="${l}, ${ch.replace(/"/g,"&quot;")}">${CHECK}</button>`).join("")}</div>`;
   });
-  app.innerHTML=`<button class="back" data-back>${CHEV}All subjects</button><section class="shead" id="shead">${wrap(112,19)}<div><h2 tabindex="-1">${s}</h2>${legend()}</div></section><div class="table">${rows}</div><p class="note">${CONTACT}</p>`;
+  app.innerHTML=`<div class="subtop"><button class="back" data-back>${CHEV}All subjects</button>${reloadBtn}</div><section class="shead" id="shead">${wrap(112,19)}<div><h2 tabindex="-1">${s}</h2>${legend()}</div></section><div class="table">${rows}</div><p class="note">${CONTACT}</p>`;
   setRings(app.querySelector("#shead"),c.map(x=>x/n));
 }
 
@@ -125,6 +127,7 @@ function subject(s){
 function click(e){
   const g=e.target.closest("[data-go]");
   if(g){location.hash=g.dataset.go;return}
+  if(e.target.closest("[data-reload]")){location.reload();return}
   if(e.target.closest("[data-back]")){location.hash="";return}
   if(e.target.closest("[data-change]")){try{localStorage.removeItem("profile")}catch(x){}profile=null;location.hash="";welcome();return}
   const p=e.target.closest("[data-plan]");
@@ -151,4 +154,3 @@ function start(){prog=get("progress:"+ID(),{});route()}
 app.onclick=click;
 addEventListener("hashchange",()=>{if(profile)route()});
 profile?start():welcome();
-      
