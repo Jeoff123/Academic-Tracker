@@ -20,14 +20,24 @@ const CBSE_COMMON = {
   "Chemistry": ["Solutions","Electrochemistry","Chemical Kinetics","The d- and f-Block Elements","Coordination Compounds","Haloalkanes and Haloarenes","Alcohols, Phenols and Ethers","Aldehydes, Ketones and Carboxylic Acids","Amines","Biomolecules"],
   "Mathematics": ["Relations and Functions","Inverse Trigonometric Functions","Matrices","Determinants","Continuity and Differentiability","Applications of Derivatives","Integrals","Applications of Integrals","Differential Equations","Vector Algebra","Three Dimensional Geometry","Linear Programming","Probability"]
 };
+
+// Chemistry exam on 20 Nov 2026 (CBSE, both batches):
+// Solutions (1), Coordination Compounds (5), Haloalkanes and Haloarenes (6), Biomolecules (10)
+const CBSE_CHEM_EXAM_NOV_2026 = {
+  name: "Chemistry exam",
+  papers: {
+    "Chemistry": { date: "2026-11-20", chapters: [1,5,6,10] }
+  }
+};
+
 const SYLLABUS = {
   "CBSE-PCMC": {
     subjects: { ...CBSE_COMMON, "Computer Science": ["Python Revision Tour","Functions","Exception Handling","File Handling","Data Structures: Stack","Computer Networks","Database Management and SQL","Interface Python with SQL"] },
-    exams: []
+    exams: [CBSE_CHEM_EXAM_NOV_2026]
   },
   "CBSE-PCMB": {
     subjects: { ...CBSE_COMMON, "Biology": ["Sexual Reproduction in Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Microbes in Human Welfare","Biotechnology: Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation"] },
-    exams: []
+    exams: [CBSE_CHEM_EXAM_NOV_2026]
   },
   // State board entries are filled below from the CBSE lists (same chapter names).
   // Exams stay separate for every board and batch.
