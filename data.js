@@ -45,10 +45,19 @@ const SYLLABUS = {
   "State-PCMB": { subjects: {}, exams: [] }
 };
 
-// State PCMB has the same chapters as CBSE PCMB.
-SYLLABUS["State-PCMB"].subjects = SYLLABUS["CBSE-PCMB"].subjects;
-// State PCMC shares Physics, Chemistry and Mathematics with PCMB.
+// English is common to all State board batches.
+const STATE_ENGLISH = ["The 3Ls Of Empowerment","Any Woman","Matchbox","Horegallu","Mending Wall","Amigo Brothers","The Hour Of Truth","A Three Wheeled Revolution","Didi","Stammer","When a Sapling is Planted","Rice","Dangers of Drug Abuse","Post Early for Christmas","This is Going to Hurt Just A Little Bit","Crime and Punishment"];
+
+// State PCMB: same Physics, Chemistry, Mathematics and Biology as CBSE PCMB, plus English.
+SYLLABUS["State-PCMB"].subjects = {
+  ...CBSE_COMMON,
+  "English": STATE_ENGLISH,
+  "Biology": SYLLABUS["CBSE-PCMB"].subjects["Biology"]
+};
+// State PCMC: Physics, Chemistry and Mathematics are shared with PCMB, plus English.
 SYLLABUS["State-PCMC"].subjects = {
   ...CBSE_COMMON,
+  "English": STATE_ENGLISH,
   "Computer Science": ["Structures and Pointers","Concepts of Object Oriented Programming","Data Structures and Operations","Web Technology","Web Designing Using HTML","Client Side Scripting Using JavaScript","Web Hosting","Database Management System","Structured Query Language","Server Side Scripting Using PHP","Advances in Computing","ICT and Society"]
 };
+                       
