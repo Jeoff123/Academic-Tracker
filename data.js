@@ -29,6 +29,14 @@ const SYLLABUS = {
     subjects: { ...CBSE_COMMON, "Biology": ["Sexual Reproduction in Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Microbes in Human Welfare","Biotechnology: Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation"] },
     exams: []
   },
+  // State board entries are filled below from the CBSE lists (same chapter names).
+  // Exams stay separate for every board and batch.
   "State-PCMC": { subjects: {}, exams: [] },
   "State-PCMB": { subjects: {}, exams: [] }
 };
+
+// State PCMB has the same chapters as CBSE PCMB.
+SYLLABUS["State-PCMB"].subjects = SYLLABUS["CBSE-PCMB"].subjects;
+// State PCMC shares Physics, Chemistry and Mathematics with PCMB.
+// To add its Computer Science chapters, write them here:
+SYLLABUS["State-PCMC"].subjects = { ...CBSE_COMMON /* , "Computer Science": ["Chapter 1", "Chapter 2"] */ };
