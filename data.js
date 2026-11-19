@@ -14,6 +14,7 @@
        "Chemistry":   { date: "2027-02-18", chapters: [1,2,3] },
        "Mathematics": { date: "2027-02-21", chapters: [1,2,3,4,5,6] }
      } }
+   Use  chapters: "all"  when an exam covers a subject's whole syllabus.
 */
 const CBSE_COMMON = {
   "Physics": ["Electric Charges and Fields","Electrostatic Potential and Capacitance","Current Electricity","Moving Charges and Magnetism","Magnetism and Matter","Electromagnetic Induction","Alternating Current","Electromagnetic Waves","Ray Optics and Optical Instruments","Wave Optics","Dual Nature of Radiation and Matter","Atoms","Nuclei","Semiconductor Electronics"],
@@ -25,8 +26,22 @@ const SYLLABUS = {
     subjects: { ...CBSE_COMMON, "Computer Science": ["Python Revision Tour","Functions","Exception Handling","File Handling","Data Structures: Stack","Computer Networks","Database Management and SQL","Interface Python with SQL"] },
     exams: [
       { name: "Chemistry exam",
+        papers: { "Chemistry": { date: "2026-11-20", chapters: [1, 5, 6, 10] } } },
+      { name: "Model exam 1",
         papers: {
-          "Chemistry": { date: "2026-11-20", chapters: [1, 5, 6, 10] }
+          // "English": { date: "2026-12-07", chapters: "all" },  // add after CBSE English chapters exist
+          "Mathematics": { date: "2026-12-09", chapters: "all" },
+          "Chemistry":   { date: "2026-12-11", chapters: "all" },
+          "Computer Science": { date: "2026-12-14", chapters: "all" },
+          "Physics":     { date: "2026-12-16", chapters: "all" }
+        } },
+      { name: "Model exam 2",
+        papers: {
+          "Chemistry":   { date: "2026-12-29", chapters: "all" },
+          "Mathematics": { date: "2027-01-01", chapters: "all" },
+          "Physics":     { date: "2027-01-04", chapters: "all" },
+          // "English": { date: "2027-01-15", chapters: "all" },  // add after CBSE English chapters exist
+          "Computer Science": { date: "2027-01-20", chapters: "all" }
         } }
     ]
   },
@@ -34,8 +49,22 @@ const SYLLABUS = {
     subjects: { ...CBSE_COMMON, "Biology": ["Sexual Reproduction in Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Microbes in Human Welfare","Biotechnology: Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation"] },
     exams: [
       { name: "Chemistry exam",
+        papers: { "Chemistry": { date: "2026-11-20", chapters: [1, 5, 6, 10] } } },
+      { name: "Model exam 1",
         papers: {
-          "Chemistry": { date: "2026-11-20", chapters: [1, 5, 6, 10] }
+          // "English": { date: "2026-12-07", chapters: "all" },  // add after CBSE English chapters exist
+          "Mathematics": { date: "2026-12-09", chapters: "all" },
+          "Chemistry":   { date: "2026-12-11", chapters: "all" },
+          "Biology": { date: "2026-12-14", chapters: "all" },
+          "Physics":     { date: "2026-12-16", chapters: "all" }
+        } },
+      { name: "Model exam 2",
+        papers: {
+          "Chemistry":   { date: "2026-12-29", chapters: "all" },
+          "Mathematics": { date: "2027-01-01", chapters: "all" },
+          "Physics":     { date: "2027-01-04", chapters: "all" },
+          // "English": { date: "2027-01-15", chapters: "all" },  // add after CBSE English chapters exist
+          "Biology": { date: "2027-01-20", chapters: "all" }
         } }
     ]
   },
@@ -60,4 +89,3 @@ SYLLABUS["State-PCMC"].subjects = {
   "English": STATE_ENGLISH,
   "Computer Science": ["Structures and Pointers","Concepts of Object Oriented Programming","Data Structures and Operations","Web Technology","Web Designing Using HTML","Client Side Scripting Using JavaScript","Web Hosting","Database Management System","Structured Query Language","Server Side Scripting Using PHP","Advances in Computing","ICT and Society"]
 };
-                       
