@@ -56,7 +56,7 @@ const fmt=d=>d.toLocaleDateString(undefined,{day:"numeric",month:"short"});
 function upcoming(){
   const t=new Date();t.setHours(0,0,0,0);
   return (S().exams||[]).map(e=>({...e,papers:Object.entries(e.papers||{}).map(([s,p])=>{
-      const d=new Date(p.date+"T00:00:00");return {s,d,chapters:p.chapters||[],left:Math.round((d-t)/864e5)};
+      const d=new Date(p.date+"T00:00:00");return {s,d,chapters:p.chapters==="all"?(S().subjects[s]||[]).map((_,i)=>i+1):(p.chapters||[]),left:Math.round((d-t)/864e5)};
     }).filter(p=>p.left>=0).sort((a,b)=>a.d-b.d)}))
     .filter(e=>e.papers.length).sort((a,b)=>a.papers[0].d-b.papers[0].d);
 }
