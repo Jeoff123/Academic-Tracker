@@ -84,3 +84,10 @@ button{font:inherit}
 .papers{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:10px}
 .papers b{font-weight:600}
 .papers small{display:block;color:var(--muted);font-size:13px}
+.top{flex-wrap:wrap}
+.tools{display:flex;align-items:center;gap:8px}
+.subtop{display:flex;justify-content:space-between;align-items:center}
+.icon-btn{width:44px;height:44px;flex:none;border-radius:50%;background:var(--surface);border:1px solid var(--line);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.icon-btn svg{transition:transform .4s}
+.icon-btn:hover svg,.icon-btn:active svg{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){.icon-btn svg{transition:none}}
