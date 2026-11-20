@@ -12,7 +12,7 @@ const OVER_HOUR=15; // an exam counts as over at this hour (24h clock) on its da
 const isOver=ds=>new Date()>=new Date(ds+"T"+String(OVER_HOUR).padStart(2,"0")+":00:00");
 const get=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
 const put=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-let profile=get("profile",null),prog={},cur=null;
+let profile=get("profile",null),prog={},cur=null,view=null,fromHash="";
 const ID=()=>profile.board+"-"+profile.stream;
 const S=()=>SYLLABUS[ID()];
 const st=(s,c)=>prog[s+"|"+c]||{};
@@ -58,7 +58,7 @@ function welcome(){
 const fmt=d=>d.toLocaleDateString(undefined,{day:"numeric",month:"short"});
 function upcoming(){
   const t=new Date();t.setHours(0,0,0,0);
-  return (S().exams||[]).map(e=>({...e,papers:Object.entries(e.papers||{}).map(([s,p])=>{
+  return (S().exams||[]).map((e,i)=>({...e,i,papers:Object.entries(e.papers||{}).map(([s,p])=>{
       const d=new Date(p.date+"T00:00:00");return {s,d,chapters:p.chapters==="all"?(S().subjects[s]||[]).map((_,i)=>i+1):(p.chapters||[]),left:Math.round((d-t)/864e5),over:isOver(p.date)};
     }).filter(p=>!p.over).sort((a,b)=>a.d-b.d)}))
     .filter(e=>e.papers.length).sort((a,b)=>a.papers[0].d-b.papers[0].d);
@@ -133,9 +133,9 @@ function home(){
     const p=plan(ex,exs.slice(1)),n=p.items.length,t=today(ex,p);
     const f=KEYS.map(([k])=>p.items.filter(x=>st(x.s,x.c)[k]).length);fr=f.map(x=>x/Math.max(n,1));
     const ago=l=>l===0?"today":l===1?"1 day left":l+" days left";
-    const list=p.rows.map(r=>`<li><b>${r.s}</b>, ${fmt(r.d)}, ${ago(r.left)}<small>${r.todo?`${r.todo} of ${r.n} chapters to learn, about ${r.per} a day`:"All chapters learnt. Time to revise."}</small></li>`).join("");
+    const list=p.rows.map(r=>`<li data-exam="exam-${ex.i}-${slug(r.s)}" tabindex="0" role="button"><b>${r.s}</b>, ${fmt(r.d)}, ${ago(r.left)}<small>${r.todo?`${r.todo} of ${r.n} chapters to learn, about ${r.per} a day`:"All chapters learnt. Time to revise."}</small></li>`).join("");
     const rows=t.keys.length?t.keys.map(([s,c,k,ah])=>`<div class="row plan${st(s,c)[k]?" done":""}"><span>${c}<small>${s}${k==="revised"?", revise":""}${ah?", bonus":""}</small></span><button class="chip" style="--c:var(--${k})" data-plan="${s}|${c}" data-k="${k}" aria-pressed="${!!st(s,c)[k]}" aria-label="Mark ${c} ${k}">${CHECK}</button></div>`).join(""):`<div class="row plan"><span>Nothing left for today.</span></div>`;
-    tp=`<section class="excard" id="ex">${wrap(112,20)}<div><h2>${ex.name}</h2><ul class="papers">${list}</ul>${t.note?`<p class="ahead">${t.note}</p>`:""}${legend()}</div></section><h2 class="sec">Today’s plan</h2><div class="table">${rows}</div>`;
+    tp=`<section class="excard" id="ex" data-exam="exam-${ex.i}" tabindex="0" role="button">${wrap(112,20)}<div><h2>${ex.name}</h2><ul class="papers">${list}</ul><p class="hint">Tap the exam or a subject to see only its chapters.</p>${t.note?`<p class="ahead">${t.note}</p>`:""}${legend()}</div></section><h2 class="sec">Today’s plan</h2><div class="table">${rows}</div>`;
   }else tp=`<div class="empty"><b>No exam scheduled</b>The next exam date and its chapters haven’t been added yet. ${CONTACT}</div>`;
   const cards=subs.map(s=>{
     const m=S().subjects[s].length,k=counts(s);
@@ -144,6 +144,39 @@ function home(){
   app.innerHTML=h+tp+`<h2 class="sec">Subjects</h2><div class="grid">${cards}</div><p class="note">${CONTACT}</p>`;
   if(fr)setRings(app.querySelector("#ex"),fr);
   app.querySelectorAll(".card").forEach(el=>setRings(el,el.dataset.fr.split(",").map(Number)));
+}
+
+/* ---------- exam page (only the chapters of one exam) ---------- */
+const tagFor=(left,over)=>over?["Done",""]:left===0?["Today","soon"]:left===1?["Tomorrow","soon"]:["In "+left+" days",""];
+function papersOf(e){
+  const t=new Date();t.setHours(0,0,0,0);
+  return Object.entries(e.papers||{}).map(([s,p])=>{
+    const chs=S().subjects[s]||[],d=new Date(p.date+"T00:00:00");
+    const idx=p.chapters==="all"?chs.map((_,i)=>i+1):(p.chapters||[]);
+    return {s,d,left:Math.round((d-t)/864e5),over:isOver(p.date),items:idx.filter(n=>chs[n-1]).map(n=>({n,c:chs[n-1]}))};
+  }).sort((x,y)=>x.d-y.d);
+}
+function shown(e,only){const all=papersOf(e),f=only?all.filter(p=>slug(p.s)===only):all;return f.length?f:all}
+function paintExam(){
+  const e=S().exams[view.i],it=shown(e,view.only).flatMap(p=>p.items.map(x=>({s:p.s,c:x.c}))),n=Math.max(it.length,1);
+  setRings(app.querySelector("#shead"),KEYS.map(([k])=>it.filter(x=>st(x.s,x.c)[k]).length/n));
+}
+function examPage(i,only){
+  const e=(S().exams||[])[i];
+  if(!e){location.hash="";return}
+  const ps=shown(e,only);
+  view={i,only};
+  const body=ps.map(p=>{
+    const tg=tagFor(p.left,p.over);
+    let rows=`<div class="row head"><span>Chapter</span>${KEYS.map(([k,l])=>`<span style="color:var(--${k})">${l}</span>`).join("")}</div>`;
+    p.items.forEach(({n,c})=>{
+      const d=st(p.s,c),q=c.replace(/"/g,"&quot;");
+      rows+=`<div class="row${d.learnt&&d.revised&&d.pyq?" done":""}"><span>${n}. ${c}</span>${KEYS.map(([k,l])=>`<button class="chip" style="--c:var(--${k})" data-t="${k}" data-s="${p.s}" data-ch="${q}" aria-pressed="${!!d[k]}" aria-label="${l}, ${q}">${CHECK}</button>`).join("")}</div>`;
+    });
+    return `<div class="phead"><div><h2>${p.s}</h2><small>${p.d.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"})}, ${p.items.length} chapter${p.items.length===1?"":"s"}</small></div><span class="tag ${tg[1]}">${tg[0]}</span></div><div class="table">${rows}</div>`;
+  }).join("");
+  app.innerHTML=`<div class="subtop"><button class="back" data-backto="${fromHash}">${CHEV}Back</button>${reloadBtn}</div><section class="shead" id="shead">${wrap(112,19)}<div><h2 tabindex="-1">${e.name}${only&&ps.length===1?": "+ps[0].s:""}</h2>${legend()}</div></section>${body}<p class="note">${CONTACT}</p>`;
+  paintExam();
 }
 
 /* ---------- subject ---------- */
@@ -164,16 +197,16 @@ function timetable(){
   const t=new Date();t.setHours(0,0,0,0);
   const mo=(d,o)=>d.toLocaleDateString(undefined,o);
   const tagOf=(left,over)=>over?["Done",""]:left===0?["Today","soon"]:left===1?["Tomorrow","soon"]:["In "+left+" days",""];
-  const row=(d,over,tag,title,sub)=>`<div class="row tt${over?" past":""}"><span class="dt"><b>${d.getDate()}</b>${mo(d,{month:"short"})}<br>${mo(d,{weekday:"short"})}</span><span><b>${title}</b>${sub?`<small>${sub}</small>`:""}</span><span class="tag ${tag[1]}">${tag[0]}</span></div>`;
+  const row=(d,over,tag,title,sub,go)=>`<div class="row tt${over?" past":""}"${go?` data-exam="${go}" tabindex="0" role="button"`:""}><span class="dt"><b>${d.getDate()}</b>${mo(d,{month:"short"})}<br>${mo(d,{weekday:"short"})}</span><span><b>${title}</b>${sub?`<small>${sub}</small>`:""}</span><span class="tag ${tag[1]}">${tag[0]}</span></div>`;
   const secs=[];
-  (S().exams||[]).forEach(e=>{
+  (S().exams||[]).forEach((e,ei)=>{
     const ps=Object.entries(e.papers||{}).map(([s,p])=>{
       const d=new Date(p.date+"T00:00:00"),chs=S().subjects[s]||[];
       const idx=p.chapters==="all"?chs.map((_,i)=>i+1):(p.chapters||[]);
       const names=idx.map(n=>chs[n-1]).filter(Boolean);
       return {d,left:Math.round((d-t)/864e5),over:isOver(p.date),s,what:p.chapters==="all"?`Full syllabus, ${names.length} chapters`:names.join(", ")};
     }).sort((x,y)=>x.d-y.d);
-    if(ps.length)secs.push({k:ps[0].d,name:e.name,rows:ps.map(p=>row(p.d,p.over,tagOf(p.left,p.over),p.s,p.what))});
+    if(ps.length)secs.push({k:ps[0].d,name:e.name,go:"exam-"+ei,rows:ps.map(p=>row(p.d,p.over,tagOf(p.left,p.over),p.s,p.what,"exam-"+ei+"-"+slug(p.s)))});
   });
   (S().events||[]).forEach(ev=>{
     const ds=ev.dates.map(x=>typeof x==="string"?{date:x}:x).sort((x,y)=>x.date<y.date?-1:1).map(x=>({...x,d:new Date(x.date+"T00:00:00")}));
@@ -182,12 +215,16 @@ function timetable(){
   secs.sort((x,y)=>x.k-y.k);
   let h=`<div class="subtop"><button class="back" data-back>${CHEV}Back</button>${reloadBtn}</div><h1 tabindex="-1">Exam timetable</h1><p class="lede">${label()}</p>`;
   if(!secs.length)h+=`<div class="empty"><b>No exams added yet</b>${CONTACT}</div>`;
-  h+=secs.map(x=>`<h2 class="sec">${x.name}</h2><div class="table">${x.rows.join("")}</div>`).join("");
+  h+=secs.map(x=>`<h2 class="sec"${x.go?` data-exam="${x.go}" tabindex="0" role="button" style="cursor:pointer"`:""}>${x.name}${x.go?`<span class="more">All chapters</span>`:""}</h2><div class="table">${x.rows.join("")}</div>`).join("");
   app.innerHTML=h+(secs.length?`<p class="note">${CONTACT}</p>`:"");
 }
 
 /* ---------- events + routing ---------- */
 function click(e){
+  const xe=e.target.closest("[data-exam]");
+  if(xe){fromHash=location.hash.slice(1);location.hash=xe.dataset.exam;return}
+  const bt=e.target.closest("[data-backto]");
+  if(bt){location.hash=bt.dataset.backto;return}
   const g=e.target.closest("[data-go]");
   if(g){location.hash=g.dataset.go;return}
   if(e.target.closest("[data-reload]")){location.reload();return}
@@ -205,19 +242,22 @@ function click(e){
     return;
   }
   const t=e.target.closest("[data-t]");
-  if(t&&cur){
+  if(t&&(cur||view)){
     const v=t.getAttribute("aria-pressed")!=="true";
-    setSt(cur,t.dataset.ch,t.dataset.t,v);
+    setSt(t.dataset.s||cur,t.dataset.ch,t.dataset.t,v);
     t.setAttribute("aria-pressed",v);
     const row=t.closest(".row");
     row.classList.toggle("done",row.querySelectorAll('[aria-pressed="true"]').length===3);
-    const chs=S().subjects[cur];
-    setRings(app.querySelector("#shead"),counts(cur).map(x=>x/chs.length));
+    if(view)paintExam();
+    else{const chs=S().subjects[cur];setRings(app.querySelector("#shead"),counts(cur).map(x=>x/chs.length))}
   }
 }
 function route(){
   if(!profile||!SYLLABUS[ID()])return welcome();
   const h=decodeURIComponent(location.hash.slice(1));
+  view=null;
+  const xm=h.match(/^exam-(\d+)(?:-(.+))?$/);
+  if(xm){cur=null;examPage(+xm[1],xm[2]||"");window.scrollTo(0,0);return}
   if(h==="timetable"){cur=null;timetable();window.scrollTo(0,0);return}
   cur=Object.keys(S().subjects).find(s=>slug(s)===h)||null;
   cur?subject(cur):home();
@@ -225,6 +265,7 @@ function route(){
 }
 function start(){prog=get("progress:"+ID(),{});route()}
 app.onclick=click;
+app.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("[data-exam]")){e.preventDefault();click(e)}});
 addEventListener("hashchange",()=>{if(profile)route()});
 let sig="";
 setInterval(()=>{ // refresh by itself when an exam passes its end time while the page is open
@@ -234,4 +275,3 @@ setInterval(()=>{ // refresh by itself when an exam passes its end time while th
   sig=n;
 },30000);
 profile?start():welcome();
-                                                                                    
