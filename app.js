@@ -162,21 +162,28 @@ function subject(s){
 /* ---------- timetable ---------- */
 function timetable(){
   const t=new Date();t.setHours(0,0,0,0);
-  const exams=(S().exams||[]).map(e=>({name:e.name,papers:Object.entries(e.papers||{}).map(([s,p])=>{
-    const d=new Date(p.date+"T00:00:00"),chs=S().subjects[s]||[];
-    const idx=p.chapters==="all"?chs.map((_,i)=>i+1):(p.chapters||[]);
-    return {s,d,all:p.chapters==="all",names:idx.map(n=>chs[n-1]).filter(Boolean),left:Math.round((d-t)/864e5),over:isOver(p.date)};
-  }).sort((x,y)=>x.d-y.d)})).filter(e=>e.papers.length).sort((x,y)=>x.papers[0].d-y.papers[0].d);
-  let h=`<div class="subtop"><button class="back" data-back>${CHEV}Back</button>${reloadBtn}</div><h1 tabindex="-1">Exam timetable</h1><p class="lede">${label()}</p>`;
-  if(!exams.length)h+=`<div class="empty"><b>No exams added yet</b>${CONTACT}</div>`;
-  exams.forEach(e=>{
-    h+=`<h2 class="sec">${e.name}</h2><div class="table">`+e.papers.map(p=>{
-      const tag=p.over?["Done",""]:p.left===0?["Today","soon"]:p.left===1?["Tomorrow","soon"]:["In "+p.left+" days",""];
-      const what=p.all?`Full syllabus, ${p.names.length} chapters`:p.names.join(", ");
-      return `<div class="row tt${p.over?" past":""}"><span class="dt"><b>${p.d.getDate()}</b>${p.d.toLocaleDateString(undefined,{month:"short"})}<br>${p.d.toLocaleDateString(undefined,{weekday:"short"})}</span><span><b>${p.s}</b><small>${what}</small></span><span class="tag ${tag[1]}">${tag[0]}</span></div>`;
-    }).join("")+`</div>`;
+  const mo=(d,o)=>d.toLocaleDateString(undefined,o);
+  const tagOf=(left,over)=>over?["Done",""]:left===0?["Today","soon"]:left===1?["Tomorrow","soon"]:["In "+left+" days",""];
+  const row=(d,over,tag,title,sub)=>`<div class="row tt${over?" past":""}"><span class="dt"><b>${d.getDate()}</b>${mo(d,{month:"short"})}<br>${mo(d,{weekday:"short"})}</span><span><b>${title}</b>${sub?`<small>${sub}</small>`:""}</span><span class="tag ${tag[1]}">${tag[0]}</span></div>`;
+  const secs=[];
+  (S().exams||[]).forEach(e=>{
+    const ps=Object.entries(e.papers||{}).map(([s,p])=>{
+      const d=new Date(p.date+"T00:00:00"),chs=S().subjects[s]||[];
+      const idx=p.chapters==="all"?chs.map((_,i)=>i+1):(p.chapters||[]);
+      const names=idx.map(n=>chs[n-1]).filter(Boolean);
+      return {d,left:Math.round((d-t)/864e5),over:isOver(p.date),s,what:p.chapters==="all"?`Full syllabus, ${names.length} chapters`:names.join(", ")};
+    }).sort((x,y)=>x.d-y.d);
+    if(ps.length)secs.push({k:ps[0].d,name:e.name,rows:ps.map(p=>row(p.d,p.over,tagOf(p.left,p.over),p.s,p.what))});
   });
-  app.innerHTML=h+(exams.length?`<p class="note">${CONTACT}</p>`:"");
+  (S().events||[]).forEach(ev=>{
+    const ds=ev.dates.map(x=>typeof x==="string"?{date:x}:x).sort((x,y)=>x.date<y.date?-1:1).map(x=>({...x,d:new Date(x.date+"T00:00:00")}));
+    if(ds.length)secs.push({k:ds[0].d,name:ev.name,rows:ds.map(x=>{const over=isOver(x.date);return row(x.d,over,tagOf(Math.round((x.d-t)/864e5),over),"Practical",x.note||"")})});
+  });
+  secs.sort((x,y)=>x.k-y.k);
+  let h=`<div class="subtop"><button class="back" data-back>${CHEV}Back</button>${reloadBtn}</div><h1 tabindex="-1">Exam timetable</h1><p class="lede">${label()}</p>`;
+  if(!secs.length)h+=`<div class="empty"><b>No exams added yet</b>${CONTACT}</div>`;
+  h+=secs.map(x=>`<h2 class="sec">${x.name}</h2><div class="table">${x.rows.join("")}</div>`).join("");
+  app.innerHTML=h+(secs.length?`<p class="note">${CONTACT}</p>`:"");
 }
 
 /* ---------- events + routing ---------- */
@@ -222,8 +229,9 @@ addEventListener("hashchange",()=>{if(profile)route()});
 let sig="";
 setInterval(()=>{ // refresh by itself when an exam passes its end time while the page is open
   if(!profile||!SYLLABUS[ID()])return;
-  const n=JSON.stringify(upcoming().map(e=>[e.name,e.papers.map(p=>[p.s,p.left])]));
+  const n=JSON.stringify([upcoming().map(e=>[e.name,e.papers.map(p=>[p.s,p.left])]),(S().events||[]).map(ev=>ev.dates.map(x=>isOver(x.date||x)))]);
   if(sig&&n!==sig)route();
   sig=n;
 },30000);
 profile?start():welcome();
+                                                                                    
