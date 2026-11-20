@@ -108,3 +108,9 @@ button{font:inherit}
 .tag{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--track);color:var(--muted);white-space:nowrap}
 .tag.soon{background:rgba(91,77,224,.14);background:color-mix(in srgb,var(--revised) 16%,var(--surface));color:var(--revised)}
 .ahead{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:rgba(11,138,134,.1);background:color-mix(in srgb,var(--learnt) 10%,transparent);font-size:14px;line-height:1.45}
+.clears{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.clr{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:16px;padding:12px 14px;cursor:pointer;font-weight:600}
+.clr small{color:var(--muted);font-weight:400;font-size:13px}
+.clr:hover:not(:disabled){border-color:var(--c)}
+.clr:disabled{opacity:.45;cursor:not-allowed}
+      
