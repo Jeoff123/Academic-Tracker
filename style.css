@@ -91,3 +91,19 @@ button{font:inherit}
 .icon-btn svg{transition:transform .4s}
 .icon-btn:hover svg,.icon-btn:active svg{transform:rotate(180deg)}
 @media (prefers-reduced-motion:reduce){.icon-btn svg{transition:none}}
+
+/* timetable */
+.ttlink{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--surface);color:inherit;border:1px solid var(--line);border-radius:20px;padding:14px 18px;margin-bottom:16px;cursor:pointer;transition:border-color .15s}
+.ttlink:hover{border-color:var(--revised)}
+.ttlink b{display:block;font:600 17px var(--font-d)}
+.ttlink small{color:var(--muted)}
+.ttlink>span:nth-child(2){flex:1}
+.ttico{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:rgba(91,77,224,.12);background:color-mix(in srgb,var(--revised) 14%,var(--surface));color:var(--revised)}
+.ttgo{color:var(--muted);display:grid}
+.ttgo svg{transform:scaleX(-1)}
+.row.tt{grid-template-columns:58px 1fr auto;gap:14px;padding:12px 16px}
+.row.tt.past{opacity:.55}
+.dt{text-align:center;line-height:1.25;font-size:12px;color:var(--muted)}
+.dt b{display:block;font:700 26px/1.05 var(--font-d);color:var(--ink)}
+.tag{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--track);color:var(--muted);white-space:nowrap}
+.tag.soon{background:rgba(91,77,224,.14);background:color-mix(in srgb,var(--revised) 16%,var(--surface));color:var(--revised)}
