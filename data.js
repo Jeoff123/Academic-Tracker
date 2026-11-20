@@ -50,6 +50,8 @@ const SYLLABUS = {
     exams: [
       { name: "Chemistry exam",
         papers: { "Chemistry": { date: "2026-11-20", chapters: [1, 5, 6, 10] } } },
+      { name: "Biology exam",
+        papers: { "Biology": { date: "2026-11-23", chapters: [3, 6, 11, 12] } } },
       { name: "Model exam 1",
         papers: {
           // "English": { date: "2026-12-07", chapters: "all" },  // add after CBSE English chapters exist
@@ -89,3 +91,4 @@ SYLLABUS["State-PCMC"].subjects = {
   "English": STATE_ENGLISH,
   "Computer Science": ["Structures and Pointers","Concepts of Object Oriented Programming","Data Structures and Operations","Web Technology","Web Designing Using HTML","Client Side Scripting Using JavaScript","Web Hosting","Database Management System","Structured Query Language","Server Side Scripting Using PHP","Advances in Computing","ICT and Society"]
 };
+                          
