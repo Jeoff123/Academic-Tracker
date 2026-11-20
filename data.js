@@ -15,6 +15,10 @@
        "Mathematics": { date: "2027-02-21", chapters: [1,2,3,4,5,6] }
      } }
    Use  chapters: "all"  when an exam covers a subject's whole syllabus.
+
+   Practicals or other dated events (no chapters, shown only in the timetable):
+   SYLLABUS["Board-Stream"].events = [ { name: "Board Practicals", dates: ["2027-01-06", "2027-01-07"] } ];
+   A date can also carry a note:  { date: "2027-01-06", note: "Physics practical" }
 */
 const CBSE_COMMON = {
   "Physics": ["Electric Charges and Fields","Electrostatic Potential and Capacitance","Current Electricity","Moving Charges and Magnetism","Magnetism and Matter","Electromagnetic Induction","Alternating Current","Electromagnetic Waves","Ray Optics and Optical Instruments","Wave Optics","Dual Nature of Radiation and Matter","Atoms","Nuclei","Semiconductor Electronics"],
@@ -91,4 +95,9 @@ SYLLABUS["State-PCMC"].subjects = {
   "English": STATE_ENGLISH,
   "Computer Science": ["Structures and Pointers","Concepts of Object Oriented Programming","Data Structures and Operations","Web Technology","Web Designing Using HTML","Client Side Scripting Using JavaScript","Web Hosting","Database Management System","Structured Query Language","Server Side Scripting Using PHP","Advances in Computing","ICT and Society"]
 };
-                          
+
+// Board practicals (no chapters, so they only appear in the timetable)
+const CBSE_PRACTICALS = { name: "Board Practicals", dates: ["2027-01-06","2027-01-07","2027-01-08","2027-01-11","2027-01-12","2027-01-13","2027-01-14","2027-01-15"] };
+SYLLABUS["CBSE-PCMC"].events = [CBSE_PRACTICALS];
+SYLLABUS["CBSE-PCMB"].events = [CBSE_PRACTICALS];
+   
