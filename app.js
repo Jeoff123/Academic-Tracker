@@ -134,8 +134,9 @@ function home(){
     const f=KEYS.map(([k])=>p.items.filter(x=>st(x.s,x.c)[k]).length);fr=f.map(x=>x/Math.max(n,1));
     const ago=l=>l===0?"today":l===1?"1 day left":l+" days left";
     const list=p.rows.map(r=>`<li data-exam="exam-${ex.i}-${slug(r.s)}" tabindex="0" role="button"><b>${r.s}</b>, ${fmt(r.d)}, ${ago(r.left)}<small>${r.todo?`${r.todo} of ${r.n} chapters to learn, about ${r.per} a day`:"All chapters learnt. Time to revise."}</small></li>`).join("");
-    const rows=t.keys.length?t.keys.map(([s,c,k,ah])=>`<div class="row plan${st(s,c)[k]?" done":""}"><span>${c}<small>${s}${k==="revised"?", revise":""}${ah?", bonus":""}</small></span><button class="chip" style="--c:var(--${k})" data-plan="${s}|${c}" data-k="${k}" aria-pressed="${!!st(s,c)[k]}" aria-label="Mark ${c} ${k}">${CHECK}</button></div>`).join(""):`<div class="row plan"><span>Nothing left for today.</span></div>`;
-    tp=`<section class="excard" id="ex" data-exam="exam-${ex.i}" tabindex="0" role="button">${wrap(112,20)}<div><h2>${ex.name}</h2><ul class="papers">${list}</ul><p class="hint">Tap the exam or a subject to see only its chapters.</p>${t.note?`<p class="ahead">${t.note}</p>`:""}${legend()}</div></section><h2 class="sec">Today’s plan</h2><div class="table">${rows}</div>`;
+    const cu=get("custom:"+ID(),{}),custom=cu.date===new Date().toDateString()?cu:null,tk=custom?custom.keys:t.keys;
+    const rows=tk.length?tk.map(([s,c,k,ah])=>`<div class="row plan${st(s,c)[k]?" done":""}"><span>${c}<small>${s}${k==="revised"?", revise":""}${ah?", bonus":""}</small></span><button class="chip" style="--c:var(--${k})" data-plan="${s}|${c}" data-k="${k}" aria-pressed="${!!st(s,c)[k]}" aria-label="Mark ${c} ${k}">${CHECK}</button></div>`).join(""):`<div class="row plan"><span>${custom?"You haven’t picked any chapters for today.":"Nothing left for today."}</span></div>`;
+    tp=`<section class="excard" id="ex" data-exam="exam-${ex.i}" tabindex="0" role="button">${wrap(112,20)}<div><h2>${ex.name}</h2><ul class="papers">${list}</ul><p class="hint">Tap the exam or a subject to see only its chapters.</p>${!custom&&t.note?`<p class="ahead">${t.note}</p>`:""}${legend()}</div></section><div class="phead"><h2>Today’s plan</h2><button class="mini" data-goplan>${custom?"Edit":"Change"}</button></div>${custom?`<p class="hint">You chose this plan. The suggested plan comes back tomorrow.</p>`:""}<div class="table">${rows}</div>`;
   }else tp=`<div class="empty"><b>No exam scheduled</b>The next exam date and its chapters haven’t been added yet. ${CONTACT}</div>`;
   const cards=subs.map(s=>{
     const m=S().subjects[s].length,k=counts(s);
@@ -177,6 +178,39 @@ function examPage(i,only){
   }).join("");
   app.innerHTML=`<div class="subtop"><button class="back" data-backto="${fromHash}">${CHEV}Back</button>${reloadBtn}</div><section class="shead" id="shead">${wrap(112,19)}<div><h2 tabindex="-1">${e.name}${only&&ps.length===1?": "+ps[0].s:""}</h2>${legend()}</div></section>${body}<p class="note">${CONTACT}</p>`;
   paintExam();
+}
+
+/* ---------- choose today's plan ---------- */
+let sel=new Set();
+function countSel(){const c=app.querySelector("#selcount");if(c)c.textContent=sel.size+" chapter"+(sel.size===1?"":"s")+" selected"}
+function planEditor(){
+  const exs=upcoming(),ex=exs[0];
+  if(!ex){location.hash="";return}
+  const p=plan(ex,exs.slice(1)),t=today(ex,p),cu=get("custom:"+ID(),{}),custom=cu.date===new Date().toDateString()?cu:null;
+  sel=new Set((custom?custom.keys:t.keys).map(k=>k[0]+"|"+k[1]));
+  const groups=ex.papers.map(pp=>{
+    const chs=S().subjects[pp.s]||[];
+    const rows=pp.chapters.filter(n=>chs[n-1]).map(n=>{
+      const c=chs[n-1],d=st(pp.s,c),key=(pp.s+"|"+c).replace(/"/g,"&quot;");
+      const state=[d.learnt&&"learnt",d.revised&&"revised",d.pyq&&"PYQ done"].filter(Boolean).join(", ")||"Not started";
+      return `<div class="row plan"><span>${n}. ${c}<small>${state}</small></span><button class="chip" style="--c:var(--revised)" data-pick="${key}" aria-pressed="${sel.has(pp.s+"|"+c)}" aria-label="Add ${c.replace(/"/g,"&quot;")} to today’s plan">${CHECK}</button></div>`;
+    }).join("");
+    return `<div class="phead"><div><h2>${pp.s}</h2><small>${fmt(pp.d)}, ${tagFor(pp.left,false)[0].toLowerCase()}</small></div></div><div class="table">${rows}</div>`;
+  }).join("");
+  app.innerHTML=`<div class="subtop"><button class="back" data-backto="">${CHEV}Back</button>${reloadBtn}</div><h1 tabindex="-1">Today’s plan</h1><p class="lede">Pick the chapters you want to study today for ${ex.name}. The suggested ones are already ticked.</p>${groups}<div class="planbar"><span id="selcount"></span><button class="go2" data-save>Save plan</button>${custom?`<button class="ghost" data-reset>Reset to suggested</button>`:""}</div><p class="note">${CONTACT}</p>`;
+  countSel();
+}
+function savePlan(){
+  const ex=upcoming()[0];if(!ex)return;
+  const keys=[];
+  ex.papers.forEach(pp=>{
+    const chs=S().subjects[pp.s]||[];
+    pp.chapters.forEach(n=>{
+      const c=chs[n-1];
+      if(c&&sel.has(pp.s+"|"+c)){const d=st(pp.s,c);keys.push([pp.s,c,!d.learnt?"learnt":!d.revised?"revised":"pyq"])}
+    });
+  });
+  put("custom:"+ID(),{date:new Date().toDateString(),keys});
 }
 
 /* ---------- subject ---------- */
@@ -223,6 +257,11 @@ function timetable(){
 function click(e){
   const xe=e.target.closest("[data-exam]");
   if(xe){fromHash=location.hash.slice(1);location.hash=xe.dataset.exam;return}
+  if(e.target.closest("[data-goplan]")){location.hash="plan";return}
+  const pk=e.target.closest("[data-pick]");
+  if(pk){const key=pk.dataset.pick,on=!sel.has(key);on?sel.add(key):sel.delete(key);pk.setAttribute("aria-pressed",on);countSel();return}
+  if(e.target.closest("[data-save]")){savePlan();location.hash="";return}
+  if(e.target.closest("[data-reset]")){try{localStorage.removeItem("custom:"+ID())}catch(x){}location.hash="";return}
   const bt=e.target.closest("[data-backto]");
   if(bt){location.hash=bt.dataset.backto;return}
   const g=e.target.closest("[data-go]");
@@ -234,44 +273,4 @@ function click(e){
   if(p){const [s,c]=p.dataset.plan.split("|");setSt(s,c,p.dataset.k,p.getAttribute("aria-pressed")!=="true");home();return}
   const cl=e.target.closest("[data-clear]");
   if(cl&&cur){
-    const k=cl.dataset.clear,l=KEYS.find(x=>x[0]===k)[1];
-    if(confirm(`Clear every "${l}" tick for ${cur}? This can’t be undone.`)){
-      S().subjects[cur].forEach(ch=>{if(st(cur,ch)[k])setSt(cur,ch,k,false)});
-      subject(cur);
-    }
-    return;
-  }
-  const t=e.target.closest("[data-t]");
-  if(t&&(cur||view)){
-    const v=t.getAttribute("aria-pressed")!=="true";
-    setSt(t.dataset.s||cur,t.dataset.ch,t.dataset.t,v);
-    t.setAttribute("aria-pressed",v);
-    const row=t.closest(".row");
-    row.classList.toggle("done",row.querySelectorAll('[aria-pressed="true"]').length===3);
-    if(view)paintExam();
-    else{const chs=S().subjects[cur];setRings(app.querySelector("#shead"),counts(cur).map(x=>x/chs.length))}
-  }
-}
-function route(){
-  if(!profile||!SYLLABUS[ID()])return welcome();
-  const h=decodeURIComponent(location.hash.slice(1));
-  view=null;
-  const xm=h.match(/^exam-(\d+)(?:-(.+))?$/);
-  if(xm){cur=null;examPage(+xm[1],xm[2]||"");window.scrollTo(0,0);return}
-  if(h==="timetable"){cur=null;timetable();window.scrollTo(0,0);return}
-  cur=Object.keys(S().subjects).find(s=>slug(s)===h)||null;
-  cur?subject(cur):home();
-  window.scrollTo(0,0);
-}
-function start(){prog=get("progress:"+ID(),{});route()}
-app.onclick=click;
-app.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("[data-exam]")){e.preventDefault();click(e)}});
-addEventListener("hashchange",()=>{if(profile)route()});
-let sig="";
-setInterval(()=>{ // refresh by itself when an exam passes its end time while the page is open
-  if(!profile||!SYLLABUS[ID()])return;
-  const n=JSON.stringify([upcoming().map(e=>[e.name,e.papers.map(p=>[p.s,p.left])]),(S().events||[]).map(ev=>ev.dates.map(x=>isOver(x.date||x)))]);
-  if(sig&&n!==sig)route();
-  sig=n;
-},30000);
-profile?start():welcome();
+    
