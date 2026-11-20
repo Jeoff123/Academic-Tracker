@@ -113,4 +113,4 @@ button{font:inherit}
 .clr small{color:var(--muted);font-weight:400;font-size:13px}
 .clr:hover:not(:disabled){border-color:var(--c)}
 .clr:disabled{opacity:.45;cursor:not-allowed}
-      
+               
