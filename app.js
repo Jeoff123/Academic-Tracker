@@ -61,7 +61,7 @@ function upcoming(){
     }).filter(p=>p.left>=0).sort((a,b)=>a.d-b.d)}))
     .filter(e=>e.papers.length).sort((a,b)=>a.papers[0].d-b.papers[0].d);
 }
-function plan(e){
+function plan(e,later=[]){
   const items=[],rows=[],q=[];
   e.papers.forEach(p=>{
     const mine=p.chapters.map(n=>({s:p.s,c:(S().subjects[p.s]||[])[n-1]})).filter(x=>x.c);
@@ -72,12 +72,44 @@ function plan(e){
     if(todo.length)todo.slice(0,per).forEach(x=>q.push([x.s,x.c,"learnt"]));
     else mine.filter(x=>!st(x.s,x.c).revised).slice(0,2).forEach(x=>q.push([x.s,x.c,"revised"]));
   });
-  return {items,rows,q};
+  /* Spare time: when every paper of this exam has more than (chapters left + 2) days,
+     add ONE bonus chapter, after the current exam's own chapters, from the biggest pending portion of the following exams. */
+  let note="";
+  const live=rows.filter(r=>r.todo>0);
+  if(live.every(r=>r.left>r.todo+2)){
+    const E=1;
+    const taken=new Set(q.map(k=>k[0]+"|"+k[1]));
+    const build=src=>{
+      const pool={};
+      src.forEach(x=>x.papers.forEach(p=>{
+        const chs=S().subjects[p.s]||[];
+        p.chapters.slice().sort((m,n)=>m-n).forEach(n=>{
+          const c=chs[n-1];
+          if(c&&!st(p.s,c).learnt&&!taken.has(p.s+"|"+c)){
+            const o=pool[p.s]=pool[p.s]||[];
+            if(!o.some(y=>y.c===c))o.push({c,from:x.name});
+          }
+        });
+      }));
+      return pool;
+    };
+    let pool=build(later);
+    if(!Object.keys(pool).length)pool=build([e]);
+    let first=null;
+    for(let i=0;i<E;i++){
+      const s=Object.keys(pool).sort((m,n)=>pool[n].length-pool[m].length)[0];
+      if(!s||!pool[s].length)break;
+      if(!first)first={s,n:pool[s].length,from:pool[s][0].from};
+      q.push([s,pool[s].shift().c,"learnt","ahead"]);
+    }
+    if(first)note=`The main chapters above are for ${e.name}, so do them first. You have spare time, so 1 bonus chapter is added${first.from!==e.name?` from ${first.from}`:""}. ${first.s} has the biggest portion left (${first.n} chapters).`;
+  }
+  return {items,rows,q,note};
 }
 function today(e,p){
   const d=new Date().toDateString(),s=get("today:"+ID(),{});
-  if(s.v===2&&s.date===d&&s.exam===e.name)return s;
-  const n={v:2,date:d,exam:e.name,keys:p.q};put("today:"+ID(),n);return n;
+  if(s.v===4&&s.date===d&&s.exam===e.name)return s;
+  const n={v:4,date:d,exam:e.name,keys:p.q,note:p.note};put("today:"+ID(),n);return n;
 }
 
 /* ---------- home ---------- */
@@ -93,14 +125,14 @@ function home(){
     app.innerHTML=h+`<div class="empty"><b>Syllabus coming soon</b>The ${label()} syllabus hasn’t been added yet. ${CONTACT}</div>`;
     return;
   }
-  const ex=upcoming()[0];let fr=null,tp="";
+  const exs=upcoming(),ex=exs[0];let fr=null,tp="";
   if(ex){
-    const p=plan(ex),n=p.items.length,t=today(ex,p);
+    const p=plan(ex,exs.slice(1)),n=p.items.length,t=today(ex,p);
     const f=KEYS.map(([k])=>p.items.filter(x=>st(x.s,x.c)[k]).length);fr=f.map(x=>x/Math.max(n,1));
     const ago=l=>l===0?"today":l===1?"1 day left":l+" days left";
     const list=p.rows.map(r=>`<li><b>${r.s}</b>, ${fmt(r.d)}, ${ago(r.left)}<small>${r.todo?`${r.todo} of ${r.n} chapters to learn, about ${r.per} a day`:"All chapters learnt. Time to revise."}</small></li>`).join("");
-    const rows=t.keys.length?t.keys.map(([s,c,k])=>`<div class="row plan${st(s,c)[k]?" done":""}"><span>${c}<small>${s}${k==="revised"?", revise":""}</small></span><button class="chip" style="--c:var(--${k})" data-plan="${s}|${c}" data-k="${k}" aria-pressed="${!!st(s,c)[k]}" aria-label="Mark ${c} ${k}">${CHECK}</button></div>`).join(""):`<div class="row plan"><span>Nothing left for today.</span></div>`;
-    tp=`<section class="excard" id="ex">${wrap(112,20)}<div><h2>${ex.name}</h2><ul class="papers">${list}</ul>${legend()}</div></section><h2 class="sec">Today’s plan</h2><div class="table">${rows}</div>`;
+    const rows=t.keys.length?t.keys.map(([s,c,k,ah])=>`<div class="row plan${st(s,c)[k]?" done":""}"><span>${c}<small>${s}${k==="revised"?", revise":""}${ah?", bonus":""}</small></span><button class="chip" style="--c:var(--${k})" data-plan="${s}|${c}" data-k="${k}" aria-pressed="${!!st(s,c)[k]}" aria-label="Mark ${c} ${k}">${CHECK}</button></div>`).join(""):`<div class="row plan"><span>Nothing left for today.</span></div>`;
+    tp=`<section class="excard" id="ex">${wrap(112,20)}<div><h2>${ex.name}</h2><ul class="papers">${list}</ul>${t.note?`<p class="ahead">${t.note}</p>`:""}${legend()}</div></section><h2 class="sec">Today’s plan</h2><div class="table">${rows}</div>`;
   }else tp=`<div class="empty"><b>No exam scheduled</b>The next exam date and its chapters haven’t been added yet. ${CONTACT}</div>`;
   const cards=subs.map(s=>{
     const m=S().subjects[s].length,k=counts(s);
@@ -176,4 +208,3 @@ function start(){prog=get("progress:"+ID(),{});route()}
 app.onclick=click;
 addEventListener("hashchange",()=>{if(profile)route()});
 profile?start():welcome();
-           
