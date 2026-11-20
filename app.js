@@ -8,6 +8,8 @@ const reloadBtn=`<button class="icon-btn" data-reload aria-label="Reload page">$
 const CAL='<svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true"><rect x="3" y="4.5" width="14" height="12.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 8.5h14M7 2.8v3M13 2.8v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 const CHEV='<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M12.5 4.5L7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
+const OVER_HOUR=15; // an exam counts as over at this hour (24h clock) on its date
+const isOver=ds=>new Date()>=new Date(ds+"T"+String(OVER_HOUR).padStart(2,"0")+":00:00");
 const get=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
 const put=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let profile=get("profile",null),prog={},cur=null;
@@ -57,8 +59,8 @@ const fmt=d=>d.toLocaleDateString(undefined,{day:"numeric",month:"short"});
 function upcoming(){
   const t=new Date();t.setHours(0,0,0,0);
   return (S().exams||[]).map(e=>({...e,papers:Object.entries(e.papers||{}).map(([s,p])=>{
-      const d=new Date(p.date+"T00:00:00");return {s,d,chapters:p.chapters==="all"?(S().subjects[s]||[]).map((_,i)=>i+1):(p.chapters||[]),left:Math.round((d-t)/864e5)};
-    }).filter(p=>p.left>=0).sort((a,b)=>a.d-b.d)}))
+      const d=new Date(p.date+"T00:00:00");return {s,d,chapters:p.chapters==="all"?(S().subjects[s]||[]).map((_,i)=>i+1):(p.chapters||[]),left:Math.round((d-t)/864e5),over:isOver(p.date)};
+    }).filter(p=>!p.over).sort((a,b)=>a.d-b.d)}))
     .filter(e=>e.papers.length).sort((a,b)=>a.papers[0].d-b.papers[0].d);
 }
 function plan(e,later=[]){
@@ -108,8 +110,9 @@ function plan(e,later=[]){
 }
 function today(e,p){
   const d=new Date().toDateString(),s=get("today:"+ID(),{});
-  if(s.v===4&&s.date===d&&s.exam===e.name)return s;
-  const n={v:4,date:d,exam:e.name,keys:p.q,note:p.note};put("today:"+ID(),n);return n;
+  const sg=p.rows.map(r=>r.s).join(",");
+  if(s.v===5&&s.date===d&&s.exam===e.name&&s.sig===sg)return s;
+  const n={v:5,date:d,exam:e.name,sig:sg,keys:p.q,note:p.note};put("today:"+ID(),n);return n;
 }
 
 /* ---------- home ---------- */
@@ -162,15 +165,15 @@ function timetable(){
   const exams=(S().exams||[]).map(e=>({name:e.name,papers:Object.entries(e.papers||{}).map(([s,p])=>{
     const d=new Date(p.date+"T00:00:00"),chs=S().subjects[s]||[];
     const idx=p.chapters==="all"?chs.map((_,i)=>i+1):(p.chapters||[]);
-    return {s,d,all:p.chapters==="all",names:idx.map(n=>chs[n-1]).filter(Boolean),left:Math.round((d-t)/864e5)};
+    return {s,d,all:p.chapters==="all",names:idx.map(n=>chs[n-1]).filter(Boolean),left:Math.round((d-t)/864e5),over:isOver(p.date)};
   }).sort((x,y)=>x.d-y.d)})).filter(e=>e.papers.length).sort((x,y)=>x.papers[0].d-y.papers[0].d);
   let h=`<div class="subtop"><button class="back" data-back>${CHEV}Back</button>${reloadBtn}</div><h1 tabindex="-1">Exam timetable</h1><p class="lede">${label()}</p>`;
   if(!exams.length)h+=`<div class="empty"><b>No exams added yet</b>${CONTACT}</div>`;
   exams.forEach(e=>{
     h+=`<h2 class="sec">${e.name}</h2><div class="table">`+e.papers.map(p=>{
-      const tag=p.left<0?["Done",""]:p.left===0?["Today","soon"]:p.left===1?["Tomorrow","soon"]:["In "+p.left+" days",""];
+      const tag=p.over?["Done",""]:p.left===0?["Today","soon"]:p.left===1?["Tomorrow","soon"]:["In "+p.left+" days",""];
       const what=p.all?`Full syllabus, ${p.names.length} chapters`:p.names.join(", ");
-      return `<div class="row tt${p.left<0?" past":""}"><span class="dt"><b>${p.d.getDate()}</b>${p.d.toLocaleDateString(undefined,{month:"short"})}<br>${p.d.toLocaleDateString(undefined,{weekday:"short"})}</span><span><b>${p.s}</b><small>${what}</small></span><span class="tag ${tag[1]}">${tag[0]}</span></div>`;
+      return `<div class="row tt${p.over?" past":""}"><span class="dt"><b>${p.d.getDate()}</b>${p.d.toLocaleDateString(undefined,{month:"short"})}<br>${p.d.toLocaleDateString(undefined,{weekday:"short"})}</span><span><b>${p.s}</b><small>${what}</small></span><span class="tag ${tag[1]}">${tag[0]}</span></div>`;
     }).join("")+`</div>`;
   });
   app.innerHTML=h+(exams.length?`<p class="note">${CONTACT}</p>`:"");
@@ -207,4 +210,12 @@ function route(){
 function start(){prog=get("progress:"+ID(),{});route()}
 app.onclick=click;
 addEventListener("hashchange",()=>{if(profile)route()});
+let sig="";
+setInterval(()=>{ // refresh by itself when an exam passes its end time while the page is open
+  if(!profile||!SYLLABUS[ID()])return;
+  const n=JSON.stringify(upcoming().map(e=>[e.name,e.papers.map(p=>[p.s,p.left])]));
+  if(sig&&n!==sig)route();
+  sig=n;
+},30000);
 profile?start():welcome();
+                       
