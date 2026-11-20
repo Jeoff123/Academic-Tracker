@@ -113,4 +113,12 @@ button{font:inherit}
 .clr small{color:var(--muted);font-weight:400;font-size:13px}
 .clr:hover:not(:disabled){border-color:var(--c)}
 .clr:disabled{opacity:.45;cursor:not-allowed}
-               
+.phead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:24px 0 10px}
+.phead h2{margin:0;font-size:21px}
+.phead small{color:var(--muted)}
+.hint{color:var(--muted);font-size:13px;margin:0 0 10px}
+.excard[data-exam],.papers li[data-exam],.row.tt[data-exam]{cursor:pointer}
+.excard[data-exam]:hover{border-color:var(--revised)}
+.row.tt[data-exam]:hover{background:var(--bg)}
+.more{margin-left:10px;font:600 13px var(--font-b);color:var(--revised)}
+       
