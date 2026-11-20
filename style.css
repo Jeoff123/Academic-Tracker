@@ -107,3 +107,4 @@ button{font:inherit}
 .dt b{display:block;font:700 26px/1.05 var(--font-d);color:var(--ink)}
 .tag{font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--track);color:var(--muted);white-space:nowrap}
 .tag.soon{background:rgba(91,77,224,.14);background:color-mix(in srgb,var(--revised) 16%,var(--surface));color:var(--revised)}
+.ahead{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:rgba(11,138,134,.1);background:color-mix(in srgb,var(--learnt) 10%,transparent);font-size:14px;line-height:1.45}
