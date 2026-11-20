@@ -5,6 +5,7 @@ const CONTACT="The syllabus is fixed and can’t be edited here. To request a ch
 const CHECK='<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M4.5 10.5l3.7 3.7L15.5 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const RELOAD='<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M16 10a6 6 0 1 1-1.8-4.3M16 3.5v3.8h-3.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const reloadBtn=`<button class="icon-btn" data-reload aria-label="Reload page">${RELOAD}</button>`;
+const CAL='<svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true"><rect x="3" y="4.5" width="14" height="12.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 8.5h14M7 2.8v3M13 2.8v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 const CHEV='<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M12.5 4.5L7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 const get=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
@@ -87,7 +88,7 @@ function counts(s){
 }
 function home(){
   const subs=Object.keys(S().subjects);
-  let h=`<div class="top"><h1 tabindex="-1">Academic Tracker</h1><div class="tools"><button class="pill" data-change>${label()}<span>Change</span></button>${reloadBtn}</div></div>`;
+  let h=`<div class="top"><h1 tabindex="-1">Academic Tracker</h1><div class="tools"><button class="pill" data-change>${label()}<span>Change</span></button>${reloadBtn}</div></div><button class="ttlink" data-go="timetable"><span class="ttico">${CAL}</span><span><b>Exam timetable</b><small>All exam dates for ${label()}</small></span><span class="ttgo">${CHEV}</span></button>`;
   if(!subs.length){
     app.innerHTML=h+`<div class="empty"><b>Syllabus coming soon</b>The ${label()} syllabus hasn’t been added yet. ${CONTACT}</div>`;
     return;
@@ -123,6 +124,26 @@ function subject(s){
   setRings(app.querySelector("#shead"),c.map(x=>x/n));
 }
 
+/* ---------- timetable ---------- */
+function timetable(){
+  const t=new Date();t.setHours(0,0,0,0);
+  const exams=(S().exams||[]).map(e=>({name:e.name,papers:Object.entries(e.papers||{}).map(([s,p])=>{
+    const d=new Date(p.date+"T00:00:00"),chs=S().subjects[s]||[];
+    const idx=p.chapters==="all"?chs.map((_,i)=>i+1):(p.chapters||[]);
+    return {s,d,all:p.chapters==="all",names:idx.map(n=>chs[n-1]).filter(Boolean),left:Math.round((d-t)/864e5)};
+  }).sort((x,y)=>x.d-y.d)})).filter(e=>e.papers.length).sort((x,y)=>x.papers[0].d-y.papers[0].d);
+  let h=`<div class="subtop"><button class="back" data-back>${CHEV}Back</button>${reloadBtn}</div><h1 tabindex="-1">Exam timetable</h1><p class="lede">${label()}</p>`;
+  if(!exams.length)h+=`<div class="empty"><b>No exams added yet</b>${CONTACT}</div>`;
+  exams.forEach(e=>{
+    h+=`<h2 class="sec">${e.name}</h2><div class="table">`+e.papers.map(p=>{
+      const tag=p.left<0?["Done",""]:p.left===0?["Today","soon"]:p.left===1?["Tomorrow","soon"]:["In "+p.left+" days",""];
+      const what=p.all?`Full syllabus, ${p.names.length} chapters`:p.names.join(", ");
+      return `<div class="row tt${p.left<0?" past":""}"><span class="dt"><b>${p.d.getDate()}</b>${p.d.toLocaleDateString(undefined,{month:"short"})}<br>${p.d.toLocaleDateString(undefined,{weekday:"short"})}</span><span><b>${p.s}</b><small>${what}</small></span><span class="tag ${tag[1]}">${tag[0]}</span></div>`;
+    }).join("")+`</div>`;
+  });
+  app.innerHTML=h+(exams.length?`<p class="note">${CONTACT}</p>`:"");
+}
+
 /* ---------- events + routing ---------- */
 function click(e){
   const g=e.target.closest("[data-go]");
@@ -146,6 +167,7 @@ function click(e){
 function route(){
   if(!profile||!SYLLABUS[ID()])return welcome();
   const h=decodeURIComponent(location.hash.slice(1));
+  if(h==="timetable"){cur=null;timetable();window.scrollTo(0,0);return}
   cur=Object.keys(S().subjects).find(s=>slug(s)===h)||null;
   cur?subject(cur):home();
   window.scrollTo(0,0);
@@ -154,3 +176,4 @@ function start(){prog=get("progress:"+ID(),{});route()}
 app.onclick=click;
 addEventListener("hashchange",()=>{if(profile)route()});
 profile?start():welcome();
+           
