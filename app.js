@@ -155,7 +155,7 @@ function subject(s){
     const d=st(s,ch);
     rows+=`<div class="row${d.learnt&&d.revised&&d.pyq?" done":""}"><span>${i+1}. ${ch}${inEx.includes(ch)?`<small>In the exam on ${fmt(pp.d)}</small>`:""}</span>${KEYS.map(([k,l])=>`<button class="chip" style="--c:var(--${k})" data-t="${k}" data-ch="${ch.replace(/"/g,"&quot;")}" aria-pressed="${!!d[k]}" aria-label="${l}, ${ch.replace(/"/g,"&quot;")}">${CHECK}</button>`).join("")}</div>`;
   });
-  app.innerHTML=`<div class="subtop"><button class="back" data-back>${CHEV}All subjects</button>${reloadBtn}</div><section class="shead" id="shead">${wrap(112,19)}<div><h2 tabindex="-1">${s}</h2>${legend()}</div></section><div class="table">${rows}</div><p class="note">${CONTACT}</p>`;
+  app.innerHTML=`<div class="subtop"><button class="back" data-back>${CHEV}All subjects</button>${reloadBtn}</div><section class="shead" id="shead">${wrap(112,19)}<div><h2 tabindex="-1">${s}</h2>${legend()}</div></section><div class="table">${rows}</div><h2 class="sec">Clear progress</h2><div class="clears">${KEYS.map(([k,l],i)=>`<button class="clr" style="--c:var(--${k})" data-clear="${k}"${c[i]?"":" disabled"}>Clear ${l==="PYQ"?"PYQ":l.toLowerCase()}<small>${c[i]} chapter${c[i]===1?"":"s"} ticked</small></button>`).join("")}</div><p class="note">${CONTACT}</p>`;
   setRings(app.querySelector("#shead"),c.map(x=>x/n));
 }
 
@@ -188,6 +188,15 @@ function click(e){
   if(e.target.closest("[data-change]")){try{localStorage.removeItem("profile")}catch(x){}profile=null;location.hash="";welcome();return}
   const p=e.target.closest("[data-plan]");
   if(p){const [s,c]=p.dataset.plan.split("|");setSt(s,c,p.dataset.k,p.getAttribute("aria-pressed")!=="true");home();return}
+  const cl=e.target.closest("[data-clear]");
+  if(cl&&cur){
+    const k=cl.dataset.clear,l=KEYS.find(x=>x[0]===k)[1];
+    if(confirm(`Clear every "${l}" tick for ${cur}? This can’t be undone.`)){
+      S().subjects[cur].forEach(ch=>{if(st(cur,ch)[k])setSt(cur,ch,k,false)});
+      subject(cur);
+    }
+    return;
+  }
   const t=e.target.closest("[data-t]");
   if(t&&cur){
     const v=t.getAttribute("aria-pressed")!=="true";
@@ -218,4 +227,4 @@ setInterval(()=>{ // refresh by itself when an exam passes its end time while th
   sig=n;
 },30000);
 profile?start():welcome();
-                       
+      
