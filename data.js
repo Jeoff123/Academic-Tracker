@@ -31,6 +31,8 @@ const SYLLABUS = {
     exams: [
       { name: "Chemistry exam",
         papers: { "Chemistry": { date: "2026-11-20", chapters: [1, 5, 6, 10] } } },
+      { name: "Computer Science exam",
+        papers: { "Computer Science": { date: "2026-11-23", chapters: [2, 3, 4, 5, 8] } } },
       { name: "Model exam 1",
         papers: {
           // "English": { date: "2026-12-07", chapters: "all" },  // add after CBSE English chapters exist
@@ -100,4 +102,3 @@ SYLLABUS["State-PCMC"].subjects = {
 const CBSE_PRACTICALS = { name: "Board Practicals", dates: ["2027-01-06","2027-01-07","2027-01-08","2027-01-11","2027-01-12","2027-01-13","2027-01-14","2027-01-15"] };
 SYLLABUS["CBSE-PCMC"].events = [CBSE_PRACTICALS];
 SYLLABUS["CBSE-PCMB"].events = [CBSE_PRACTICALS];
-   
