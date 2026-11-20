@@ -121,4 +121,10 @@ button{font:inherit}
 .excard[data-exam]:hover{border-color:var(--revised)}
 .row.tt[data-exam]:hover{background:var(--bg)}
 .more{margin-left:10px;font:600 13px var(--font-b);color:var(--revised)}
-       
+.mini{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:6px 16px;font-weight:600;font-size:14px;cursor:pointer}
+.mini:hover{border-color:var(--revised)}
+.planbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:24px}
+#selcount{flex:1 1 140px;color:var(--muted)}
+.go2,.ghost{min-height:48px;padding:0 22px;border-radius:14px;font-weight:600;font-size:16px;cursor:pointer}
+.go2{border:0;background:var(--revised);color:var(--on)}
+.ghost{border:1px solid var(--line);background:var(--surface);color:var(--ink)}
