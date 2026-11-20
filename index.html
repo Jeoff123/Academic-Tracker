@@ -5,11 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Academic Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 <main id="app"></main>
-<script src="data.js?v=11"></script>
-<script src="app.js?v=11"></script>
+<script>
+/* If something goes wrong, show the reason instead of a blank page */
+addEventListener("error",function(e){
+  var m=document.getElementById("app");
+  if(!m||m.innerHTML.trim())return;
+  var f=function(s){return String(s||"").split("/").pop().split("?")[0]};
+  var t=e.target&&e.target.src?"Could not load "+f(e.target.src):(e.message||"Unknown error")+" ("+f(e.filename)+", line "+e.lineno+")";
+  m.innerHTML='<h1 style="font-family:sans-serif">Academic Tracker</h1><p style="font-family:sans-serif;line-height:1.5">The page could not load: '+t+'. Try a hard refresh. If it still fails, contact Jeoff.</p>';
+},true);
+</script>
+<script src="data.js?v=12"></script>
+<script src="app.js?v=12"></script>
 </body>
 </html>
