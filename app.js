@@ -227,4 +227,3 @@ setInterval(()=>{ // refresh by itself when an exam passes its end time while th
   sig=n;
 },30000);
 profile?start():welcome();
-      
