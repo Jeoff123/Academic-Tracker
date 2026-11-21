@@ -27,7 +27,7 @@ body.has-timer{padding-bottom:170px}
 .tbtns{display:grid;gap:10px}
 .tbtns .go2,.tbtns .ghost{width:100%}
 .tbtns .linkbtn{justify-self:center;padding:6px;background:none;border:0;color:var(--revised);font-weight:600;cursor:pointer;text-decoration:underline}
-#tbar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;max-width:640px;margin:0 auto;background:var(--ink);color:var(--bg);border-radius:22px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+#tbar{position:fixed;left:12px;right:12px;bottom:calc(12px + var(--navh,0px) + env(safe-area-inset-bottom,0px));z-index:50;max-width:640px;margin:0 auto;background:var(--ink);color:var(--bg);border-radius:22px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,.3)}
 #tbar .tt{font:700 30px/1 var(--font-d);font-variant-numeric:tabular-nums}
 #tbar .tinfo{min-width:0}
 #tbar .tinfo b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
