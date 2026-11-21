@@ -17,6 +17,7 @@ window.StudyLog = { add: function (s, secs) {
   var m = ld(LK(), {}), d = key(new Date()); m[d] = m[d] || {}; m[d][s] = (m[d][s] || 0) + Math.round(secs); sv(LK(), m);
 } };
 
+window.StudyLog.streak = function () { return streak(ld(LK(), {})); };
 function streak(m) {
   var cur = 0, d = new Date(); if (!m[key(d)]) d.setDate(d.getDate() - 1);
   while (m[key(d)] && tot(m[key(d)]) > 0) { cur++; d.setDate(d.getDate() - 1); }

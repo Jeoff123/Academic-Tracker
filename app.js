@@ -314,4 +314,5 @@ setInterval(()=>{ // refresh by itself when an exam passes its end time while th
   if(sig&&n!==sig)route();
   sig=n;
 },30000);
-profile?start():welcome();
+window.__start=function(){profile?start():welcome()};
+addEventListener("load",function(){if(!app.innerHTML.trim())window.__start()});

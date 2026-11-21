@@ -6,13 +6,14 @@ function ic(d) { return '<svg viewBox="0 0 24 24" width="24" height="24" aria-hi
 var TABS = [
   { id: "home", label: "Home", svg: ic('<path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/>') },
   { id: "subjects", label: "Subjects", svg: ic('<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>') },
+  { id: "week", label: "Week", svg: ic('<path d="M9 7h10M9 12h10M9 17h10"/><circle cx="5" cy="7" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="5" cy="17" r="1"/>') },
   { id: "timetable", label: "Timetable", svg: ic('<rect x="4" y="5.5" width="16" height="14" rx="3"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>') },
   { id: "log", label: "Study log", svg: ic('<path d="M6 19V11M12 19V5M18 19v-6"/>') }
 ];
 
 var css = `
 #bnav{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-#bnav .bn-in{display:grid;grid-template-columns:repeat(4,1fr);max-width:560px;margin:0 auto;height:62px;padding:0 6px}
+#bnav .bn-in{display:grid;grid-template-columns:repeat(5,1fr);max-width:560px;margin:0 auto;height:62px;padding:0 6px}
 #bnav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:0;color:var(--muted);font:600 11.5px var(--font-b);cursor:pointer;padding:0;min-width:0}
 #bnav .bn-ic{display:grid;place-items:center;width:52px;height:30px;border-radius:999px;transition:background .15s,color .15s}
 #bnav button[aria-current="page"]{color:var(--revised)}
@@ -38,6 +39,8 @@ function active() {
   var h = location.hash.replace("#", "");
   if (h === "timetable" || h.indexOf("exam-") === 0) return "timetable";
   if (h === "stats") return "log";
+  if (h.indexOf("week") === 0 && h !== "weak") return "week";
+  if (h === "weak") return "home";
   if (h === "") return sub ? "subjects" : "home";
   if (h === "plan") return "home";
   return "subjects";
@@ -63,6 +66,7 @@ nav.addEventListener("click", function (e) {
   sub = id === "subjects";
   if (id === "home") { if (h) location.hash = ""; else { window.scrollTo({ top: 0, behavior: "smooth" }); sync(); } }
   else if (id === "subjects") { if (h) { location.hash = ""; setTimeout(toSubjects, 120); } else { toSubjects(); sync(); } }
+  else if (id === "week") location.hash = "week";
   else if (id === "timetable") location.hash = "timetable";
   else if (id === "log") location.hash = "stats";
 });
