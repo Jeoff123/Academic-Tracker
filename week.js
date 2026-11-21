@@ -31,6 +31,14 @@ var css = `
 .wrow small{display:block;color:var(--muted);font-weight:400;font-size:13px}
 .wrow .wok{color:var(--learnt);display:grid}
 .wempty{padding:16px;color:var(--muted)}
+.oth{background:var(--surface);border:1px solid var(--line);border-radius:20px;margin:10px 0;overflow:hidden}
+.oth summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;font:600 17px var(--font-d);cursor:pointer}
+.oth summary::-webkit-details-marker{display:none}
+.oth summary small{margin-left:auto;color:var(--muted);font:400 13px var(--font-b)}
+.oth summary::after{content:"";flex:none;width:9px;height:9px;border:solid var(--muted);border-width:0 2px 2px 0;transform:rotate(45deg);margin:-3px 2px 0 6px;transition:transform .15s}
+.oth[open] summary::after{transform:rotate(-135deg);margin-top:3px}
+.oth>div{border-top:1px solid var(--line)}
+.oth .wtable{border-radius:0;border-width:1px 0 0}
 .wbtns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
 .wbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:9px 18px;font-weight:600;cursor:pointer}
 .wbtn:hover{border-color:var(--revised)}
@@ -92,12 +100,11 @@ function build() {
           items.filter(function (x) { return !st(p.s, x).revised && !rv[p.s + "|" + x]; }).slice(0, 2).forEach(function (x) { keys.push([p.s, x, "revised"]); });
         }
       });
-      if (window.Confidence) window.Confidence.due(D).filter(function (x) { return !rv[x[0] + "|" + x[1]]; }).slice(0, 2).forEach(function (x) { keys.push([x[0], x[1], "revised"]); });
     }
     keys.forEach(mark);
     days.push({ i: i, date: D, keys: keys, custom: !!(c && c.keys) });
   }
-  return { days: days, papers: papers };
+  return { days: days, papers: papers, focus: focus };
 }
 
 function weekPage(sel) {
@@ -126,16 +133,24 @@ function editPage(i) {
   var day = b.days[i], on = {}, by = {};
   try { cur = null; view = null; } catch (e) {}
   day.keys.forEach(function (k) { on[k[0] + "|" + k[1]] = 1; });
-  b.papers.forEach(function (p) { var chs = S().subjects[p.s] || []; p.items.forEach(function (c) { if (!st(p.s, c).learnt || on[p.s + "|" + c]) (by[p.s] = by[p.s] || {})[c] = chs.indexOf(c) + 1; }); });
-  day.keys.forEach(function (k) { (by[k[0]] = by[k[0]] || {})[k[1]] = (S().subjects[k[0]] || []).indexOf(k[1]) + 1; });
+  (b.focus(day.date) || []).forEach(function (p) { var chs = S().subjects[p.s] || []; p.chapters.forEach(function (n) { var c = chs[n - 1]; if (c && (!st(p.s, c).learnt || on[p.s + "|" + c])) (by[p.s] = by[p.s] || {})[c] = n; }); });
   var groups = Object.keys(by).map(function (s) {
     return '<h2 class="sec">' + s + '</h2><div class="wtable">' + Object.keys(by[s]).sort(function (x, y) { return by[s][x] - by[s][y]; }).map(function (c) {
       var q = (s + "|" + c).replace(/"/g, "&quot;"), sel = !!on[s + "|" + c];
       return '<button type="button" class="wpick' + (sel ? " on" : "") + '" data-wkpick="' + q + '" aria-pressed="' + sel + '"><span class="wbox">' + TICK + "</span><span>" + by[s][c] + ". " + c + "</span></button>";
     }).join("") + "</div>";
   }).join("");
+  var others = '<h2 class="sec">Other chapters and subjects</h2>' + Object.keys(S().subjects).sort(function (a, b) { return (by[a] ? 0 : 1) - (by[b] ? 0 : 1); }).map(function (s) {
+    var rows = [], open = false;
+    S().subjects[s].forEach(function (c, ix) {
+      if (by[s] && by[s][c]) return;
+      var sel = !!on[s + "|" + c]; if (sel) open = true;
+      rows.push('<button type="button" class="wpick' + (sel ? " on" : "") + '" data-wkpick="' + (s + "|" + c).replace(/"/g, "&quot;") + '" aria-pressed="' + sel + '"><span class="wbox">' + TICK + "</span><span>" + (ix + 1) + ". " + c + "</span></button>");
+    });
+    return rows.length ? '<details class="oth"' + (open ? " open" : "") + "><summary><span>" + s + "</span><small>" + (by[s] ? "other chapters, " : "") + rows.length + ' chapters</small></summary><div class="wtable">' + rows.join("") + "</div></details>" : "";
+  }).join("");
   app.innerHTML = '<div class="subtop"><button class="back" data-backto="week-' + i + '">' + CHEV + "Back</button>" + reloadBtn + '</div><h1 tabindex="-1">Edit ' + wd(day.date, { weekday: "long" }) + '</h1><p class="lede">' + wd(day.date, { day: "numeric", month: "long" }) + ". Tap the chapters you want on this day. Your choice is saved as you tap.</p>" +
-    '<div class="wbtns" style="margin:0 0 6px"><button type="button" class="wlink" data-wkreset="' + i + '">Reset to suggested</button></div>' + (groups || '<div class="empty"><b>No chapters left</b>Every exam chapter is already learnt.</div>');
+    '<div class="wbtns" style="margin:0 0 6px"><button type="button" class="wlink" data-wkreset="' + i + '">Reset to suggested</button></div>' + (groups || '<div class="empty"><b>No exam chapters left</b>Every exam chapter is already learnt.</div>') + others;
 }
 
 if (typeof route === "function") {

@@ -120,7 +120,7 @@ function add(m) {
 /* ----- display ----- */
 function btns(inSaver) {
   return '<button class="tb" data-ta="add5">+5 min</button><button class="tb" data-ta="add10">+10 min</button>' +
-    '<button class="tb" data-ta="pause" data-tm="pausebtn">Pause</button>' +
+    '<button class="tb" data-ta="pause" data-tm="pausebtn">Pause</button><button class="tb" data-ta="doubt">Note a doubt</button>' +
     '<button class="tb p" data-ta="early" data-tm="earlylabel">Finished early</button>' +
     (inSaver ? '<button class="tb" data-ta="exit">Exit screen saver</button>'
              : '<button class="tb" data-ta="saver">Screen saver</button><button class="tb" data-ta="cancel">Cancel timer</button>');
@@ -190,6 +190,7 @@ function act(a) {
   if (a === "add5") add(5);
   else if (a === "add10") add(10);
   else if (a === "pause") pause();
+  else if (a === "doubt") { if (window.Doubts) window.Doubts.ask(T.s, T.c); }
   else if (a === "early") finish();
   else if (a === "cancel") {
     if (confirm("Cancel this timer without marking the chapter? Time already studied is still saved to your study log.")) { var t = T, s = studiedSecs(); clear(); logIt(t, s); }
