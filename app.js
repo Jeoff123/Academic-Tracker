@@ -1,7 +1,7 @@
 const app=document.getElementById("app");
 const KEYS=[["learnt","Learnt"],["revised","Revised"],["pyq","PYQ"]];
 const R=[46,36,26],W=7,C=R.map(r=>2*Math.PI*r);
-const CONTACT="The syllabus is fixed and can’t be edited here. To request a change, contact Jeoff.";
+const CONTACT="The syllabus is fixed and can&rsquo;t be edited here. To request a change, contact Jeoff.";
 const CHECK='<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M4.5 10.5l3.7 3.7L15.5 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const RELOAD='<svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M16 10a6 6 0 1 1-1.8-4.3M16 3.5v3.8h-3.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const reloadBtn=`<button class="icon-btn" data-reload aria-label="Reload page">${RELOAD}</button>`;
@@ -125,7 +125,7 @@ function home(){
   const subs=Object.keys(S().subjects);
   let h=`<div class="top"><h1 tabindex="-1">Academic Tracker</h1><div class="tools"><button class="pill" data-change>${label()}<span>Change</span></button>${reloadBtn}</div></div><button class="ttlink" data-go="timetable"><span class="ttico">${CAL}</span><span><b>Exam timetable</b><small>All exam dates for ${label()}</small></span><span class="ttgo">${CHEV}</span></button>`;
   if(!subs.length){
-    app.innerHTML=h+`<div class="empty"><b>Syllabus coming soon</b>The ${label()} syllabus hasn’t been added yet. ${CONTACT}</div>`;
+    app.innerHTML=h+`<div class="empty"><b>Syllabus coming soon</b>The ${label()} syllabus hasn&rsquo;t been added yet. ${CONTACT}</div>`;
     return;
   }
   const exs=upcoming(),ex=exs[0];let fr=null,tp="";
@@ -135,9 +135,51 @@ function home(){
     const ago=l=>l===0?"today":l===1?"1 day left":l+" days left";
     const list=p.rows.map(r=>`<li data-exam="exam-${ex.i}-${slug(r.s)}" tabindex="0" role="button"><b>${r.s}</b>, ${fmt(r.d)}, ${ago(r.left)}<small>${r.todo?`${r.todo} of ${r.n} chapters to learn, about ${r.per} a day`:"All chapters learnt. Time to revise."}</small></li>`).join("");
     const cu=get("custom:"+ID(),{}),custom=cu.date===new Date().toDateString()?cu:null,tk=custom?custom.keys:t.keys;
-    const rows=tk.length?tk.map(([s,c,k,ah])=>`<div class="row plan${st(s,c)[k]?" done":""}"><span>${c}<small>${s}${k==="revised"?", revise":""}${ah?", bonus":""}</small></span><button class="chip" style="--c:var(--${k})" data-plan="${s}|${c}" data-k="${k}" aria-pressed="${!!st(s,c)[k]}" aria-label="Mark ${c} ${k}">${CHECK}</button></div>`).join(""):`<div class="row plan"><span>${custom?"You haven’t picked any chapters for today.":"Nothing left for today."}</span></div>`;
-    tp=`<section class="excard" id="ex" data-exam="exam-${ex.i}" tabindex="0" role="button">${wrap(112,20)}<div><h2>${ex.name}</h2><ul class="papers">${list}</ul><p class="hint">Tap the exam or a subject to see only its chapters.</p>${!custom&&t.note?`<p class="ahead">${t.note}</p>`:""}${legend()}</div></section><div class="phead"><h2>Today’s plan</h2><button class="mini" data-goplan>${custom?"Edit":"Change"}</button></div>${custom?`<p class="hint">You chose this plan. The suggested plan comes back tomorrow.</p>`:""}<div class="table">${rows}</div>`;
-  }else tp=`<div class="empty"><b>No exam scheduled</b>The next exam date and its chapters haven’t been added yet. ${CONTACT}</div>`;
+    const rows=tk.length?tk.map(([s,c,k,ah])=>`<div class="row plan${st(s,c)[k]?" done":""}"><span>${c}<small>${s}${k==="revised"?", revise":""}${ah?", bonus":""}</small></span><button class="chip" style="--c:var(--${k})" data-plan="${s}|${c}" data-k="${k}" aria-pressed="${!!st(s,c)[k]}" aria-label="Mark ${c} ${k}">${CHECK}</button></div>`).join(""):`<div class="row plan"><span>${custom?"You haven&rsquo;t picked any chapters for today.":"Nothing left for today."}</span></div>`;
+    tp=`<section class="excard" id="ex" data-exam="exam-${ex.i}" tabindex="0" role="button">${wrap(112,20)}<div><h2>${ex.name}</h2><ul class="papers">${list}</ul><p class="hint">Tap the exam or a subject to see only its chapters.</p>${!custom&&t.note?`<p class="ahead">${t.note}</p>`:""}${legend()}</div></section><div class="phead"><h2>Today&rsquo;s plan</h2><button class="mini" data-goplan>${custom?"Edit":"Change"}</button></div>${custom?`<p class="hint">You chose this plan. The suggested plan comes back tomorrow.</p>`:""}<div class="table">${rows}</div>`;
+  }else tp=`<div class="empty"><b>No exam scheduled</b>The next exam date and its chapters haven&rsquo;t been added yet. ${CONTACT}</div>`;
+  const cards=subs.map(s=>{
+    const m=S().subjects[s].length,k=counts(s);
+    return `<button class="card" data-go="${slug(s)}" data-fr="${k.map(x=>x/m)}">${rings(64)}<span class="name">${s}</span><span class="sub">${k[0]} of ${m} learnt</span></button>`;
+  }).join("");
+  app.innerHTML=h+tp+`<h2 class="sec">Subjects</h2><div class="grid">${cards}</div><p class="note">${CONTACT}</p>`;
+  if(fr)setRings(app.querySelector("#ex"),fr);
+  app.querySelectorAll(".card").forEach(el=>setRings(el,el.dataset.fr.split(",").map(Number)));
+}
+
+/* ---------- exam page (only the chapters of one exam) ---------- */
+const tagFor=(left,over)=>over?["Done",""]:left===0?["Today","soon"]:left===1?["Tomorrow","soon"]:["In "+left+" days",""];
+function papersOf(e){
+  const t=new Date();t.setHours(0,0,0,0);
+  return Object.entries(e.papers||{}).map(([s,p])=>{
+    const chs=S().subjects[s]||[],d=new Date(p.date+"T00:00:00");
+    const idx=p.chapters==="all"?chs.map((_,i)=>i+1):(p.chapters||[]);
+    return {s,d,left:Math.round((d-t)/864e5),over:isOver(p.date),items:idx.filter(n=>chs[n-1]).map(n=>({n,c:chs[n-1]}))};
+  }).sort((x,y)=>x.d-y.d);
+}
+function shown(e,only){const all=papersOf(e),f=only?all.filter(p=>slug(p.s)===only):all;return f.length?f:all}
+function paintExam(){
+  const e=S().exams[view.i],it=shown(e,view.only).flatMap(p=>p.items.map(x=>({s:p.s,c:x.c}))),n=Math.max(it.length,1);
+  setRings(app.querySelector("#shead"),KEYS.map(([k])=>it.filter(x=>st(x.s,x.c)[k]).length/n));
+}
+function examPage(i,only){
+  const e=(S().exams||[])[i];
+  if(!e){location.hash="";return}
+  const ps=shown(e,only);
+  view={i,only};
+  const body=ps.map(p=>{
+    const tg=tagFor(p.left,p.over);
+    let rows=`<div class="row head"><span>Chapter</span>${KEYS.map(([k,l])=>`<span style="color:var(--${k})">${l}</span>`).join("")}</div>`;
+    p.items.forEach(({n,c})=>{
+      const d=st(p.s,c),q=c.replace(/"/g,"&quot;");
+      rows+=`<div class="row${d.learnt&&d.revised&&d.pyq?" done":""}"><span>${n}. ${c}</span>${KEYS.map(([k,l])=>`<button class="chip" style="--c:var(--${k})" data-t="${k}" data-s="${p.s}" data-ch="${q}" aria-pressed="${!!d[k]}" aria-label="${l}, ${q}">${CHECK}</button>`).join("")}</div>`;
+    });
+    return `<div class="phead"><div><h2>${p.s}</h2><small>${p.d.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"})}, ${p.items.length} chapter${p.items.length===1?"":"s"}</small></div><span class="tag ${tg[1]}">${tg[0]}</span></div><div class="table">${rows}</div>`;
+  }).join("");
+  app.innerHTML=`<div class="subtop"><button class="back" data-backto="${fromHash}">${CHEV}Back</button>${reloadBtn}</div><section class="shead" id="shead">${wrap(112,19)}<div><h2 tabindex="-1">${e.name}${only&&ps.length===1?": "+ps[0].s:""}</h2>${legend()}</div></section>${body}<p class="note">${CONTACT}</p>`;
+  paintExam();
+}
+added yet. ${CONTACT}</div>`;
   const cards=subs.map(s=>{
     const m=S().subjects[s].length,k=counts(s);
     return `<button class="card" data-go="${slug(s)}" data-fr="${k.map(x=>x/m)}">${rings(64)}<span class="name">${s}</span><span class="sub">${k[0]} of ${m} learnt</span></button>`;
