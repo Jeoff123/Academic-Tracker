@@ -38,9 +38,9 @@ function advance() {
     if (T.phase === "study") {
       T.studied += (T.pend - T.seg) / 1000; T.seg = 0; moved = true;
       if (T.studied >= T.budget - 1) { T.fin = true; T.studied = Math.min(T.studied, T.budget); break; }
-      T.phase = "break"; T.plen = BRK; T.pend += BRK * 1000;
+      T.phase = "break"; T.plen = T.bs || BRK; T.pend += T.plen * 1000;
     } else {
-      var len = Math.min(POMO, T.budget - T.studied);
+      var len = Math.min(T.ps || POMO, T.budget - T.studied);
       T.phase = "study"; T.seg = T.pend; T.plen = len; T.pend += len * 1000; moved = true;
     }
   }
@@ -162,36 +162,39 @@ function act(a) {
   else if (a === "exit") { closeSaver(); goHome(); }
 }
 
-function begin(s, c, k, ex, mins, saver, pomo) {
+function begin(s, c, k, ex, mins, saver, pomo, ps, bk) {
   try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
-  var now = Date.now(), b = mins * 60, len = pomo ? Math.min(POMO, b) : b;
-  T = { s: s, c: c, k: k, ex: ex, at: now, pomo: pomo ? 1 : 0, budget: b, studied: 0, phase: "study", seg: now, pend: now + len * 1000, plen: len, pl: 0, paused: false, fin: false };
+  var now = Date.now(), b = mins * 60, ps = (ps || 25) * 60; bk = (bk || 5) * 60; var len = pomo ? Math.min(ps, b) : b;
+  T = { s: s, c: c, k: k, ex: ex, at: now, pomo: pomo ? 1 : 0, ps: ps, bs: bk, budget: b, studied: 0, phase: "study", seg: now, pend: now + len * 1000, plen: len, pl: 0, paused: false, fin: false };
   if (window.PlanTime) window.PlanTime.set(s, c, mins);
-  try { localStorage.setItem("pomo", pomo ? "1" : "0"); } catch (e) {}
+  try { localStorage.setItem("pomo", pomo ? "1" : "0"); localStorage.setItem("pomocfg", JSON.stringify({ s: ps / 60, b: bk / 60 })); } catch (e) {}
   save(); buildBar(); startLoop(); if (saver) openSaver();
 }
 function ask(s, c, k) {
   if (T) { toast("A timer is already running."); return; }
   var ex = ""; try { ex = (upcoming()[0] || {}).name || ""; } catch (e) {}
   var hard = !!(window.HardFlags && window.HardFlags.is(s, c)), sel = hard ? 90 : 60, pm = false;
-  try { pm = localStorage.getItem("pomo") === "1"; } catch (e) {}
+  var pc = { s: 25, b: 5 };
+  try { pm = localStorage.getItem("pomo") === "1"; var sv0 = JSON.parse(localStorage.getItem("pomocfg")); if (sv0 && sv0.s > 0 && sv0.b > 0) pc = sv0; } catch (e) {}
   var m = el("div", "tmodal",
     '<div class="tcard" role="dialog" aria-modal="true" aria-label="Study timer"><h2>How much time do you need?</h2>' +
     '<p class="tsub"><b>' + c + "</b><br>" + s + (ex ? ", " + ex : "") + "</p>" +
     (hard ? '<p class="thard">Starred as hard, so more time (1 h 30 min) is suggested.</p>' : "") +
     '<div class="topts">' + [30, 45, 60, 90, 120].map(function (n) { return '<button class="topt' + (n === sel ? " on" : "") + '" data-min="' + n + '">' + n + " min</button>"; }).join("") + "</div>" +
     '<label class="tcustom">Or type minutes <input type="number" min="1" max="600" inputmode="numeric" id="tmin" placeholder="e.g. 40"></label>' +
-    '<label class="tpomo"><input type="checkbox" id="tpomo"' + (pm ? " checked" : "") + '><span>Pomodoro mode<small>25 min study, 5 min break, repeated until your time is used.</small></span></label>' +
+    '<label class="tpomo"><input type="checkbox" id="tpomo"' + (pm ? " checked" : "") + '><span>Pomodoro mode<small>Study in blocks with short breaks, repeated until your time is used.</small></span></label>' +
+    '<div class="tpcfg" id="tpcfg"' + (pm ? "" : " hidden") + '><label>Study block <input type="number" id="tps" min="1" max="180" inputmode="numeric" value="' + pc.s + '"> min</label><label>Break <input type="number" id="tbk" min="1" max="60" inputmode="numeric" value="' + pc.b + '"> min</label></div>' +
     '<div class="tbtns"><button class="go2" data-tgo="0">Start timer</button><button class="ghost" data-tgo="1">Start in screen saver mode</button><button class="linkbtn" data-tcancel>Cancel</button></div></div>');
   document.body.appendChild(m);
   var inp = m.querySelector("#tmin");
+  m.querySelector("#tpomo").addEventListener("change", function (e) { m.querySelector("#tpcfg").hidden = !e.target.checked; });
   inp.addEventListener("input", function () { m.querySelectorAll(".topt").forEach(function (x) { x.classList.remove("on"); }); });
   m.addEventListener("click", function (e) {
     var o = e.target.closest(".topt");
     if (o) { sel = +o.dataset.min; inp.value = ""; m.querySelectorAll(".topt").forEach(function (x) { x.classList.toggle("on", x === o); }); return; }
     if (e.target === m || e.target.closest("[data-tcancel]")) { m.remove(); return; }
     var g = e.target.closest("[data-tgo]");
-    if (g) { var v = parseInt(inp.value, 10), mins = v > 0 ? Math.min(v, 600) : sel, pomo = m.querySelector("#tpomo").checked; m.remove(); begin(s, c, k, ex, mins, g.dataset.tgo === "1", pomo); }
+    if (g) { var v = parseInt(inp.value, 10), mins = v > 0 ? Math.min(v, 600) : sel, pomo = m.querySelector("#tpomo").checked, ps = Math.min(180, Math.max(1, parseInt(m.querySelector("#tps").value, 10) || 25)), bk = Math.min(60, Math.max(1, parseInt(m.querySelector("#tbk").value, 10) || 5)); m.remove(); begin(s, c, k, ex, mins, g.dataset.tgo === "1", pomo, ps, bk); }
   });
 }
 
@@ -221,4 +224,4 @@ T = load();
 if (T && T.budget) { buildBar(); startLoop(); } else { T = null; save(); }
 window.__timer = 1;
 })();
-  
+                              
