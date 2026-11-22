@@ -173,13 +173,13 @@ function begin(s, c, k, ex, mins, saver, pomo) {
 function ask(s, c, k) {
   if (T) { toast("A timer is already running."); return; }
   var ex = ""; try { ex = (upcoming()[0] || {}).name || ""; } catch (e) {}
-  var hard = !!(window.HardFlags && window.HardFlags.is(s, c)), sel = hard ? 45 : 30, pm = false;
+  var hard = !!(window.HardFlags && window.HardFlags.is(s, c)), sel = hard ? 90 : 60, pm = false;
   try { pm = localStorage.getItem("pomo") === "1"; } catch (e) {}
   var m = el("div", "tmodal",
     '<div class="tcard" role="dialog" aria-modal="true" aria-label="Study timer"><h2>How much time do you need?</h2>' +
     '<p class="tsub"><b>' + c + "</b><br>" + s + (ex ? ", " + ex : "") + "</p>" +
-    (hard ? '<p class="thard">Starred as hard, so more time (45 min) is suggested.</p>' : "") +
-    '<div class="topts">' + [15, 30, 45, 60, 90].map(function (n) { return '<button class="topt' + (n === sel ? " on" : "") + '" data-min="' + n + '">' + n + " min</button>"; }).join("") + "</div>" +
+    (hard ? '<p class="thard">Starred as hard, so more time (1 h 30 min) is suggested.</p>' : "") +
+    '<div class="topts">' + [30, 45, 60, 90, 120].map(function (n) { return '<button class="topt' + (n === sel ? " on" : "") + '" data-min="' + n + '">' + n + " min</button>"; }).join("") + "</div>" +
     '<label class="tcustom">Or type minutes <input type="number" min="1" max="600" inputmode="numeric" id="tmin" placeholder="e.g. 40"></label>' +
     '<label class="tpomo"><input type="checkbox" id="tpomo"' + (pm ? " checked" : "") + '><span>Pomodoro mode<small>25 min study, 5 min break, repeated until your time is used.</small></span></label>' +
     '<div class="tbtns"><button class="go2" data-tgo="0">Start timer</button><button class="ghost" data-tgo="1">Start in screen saver mode</button><button class="linkbtn" data-tcancel>Cancel</button></div></div>');
