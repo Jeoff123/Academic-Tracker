@@ -32,11 +32,13 @@ body.has-timer{padding-bottom:170px}
 #tbar .tinfo{min-width:0}
 #tbar .tinfo b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #tbar .tinfo small{display:block;opacity:.75;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#tbar .tbs{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+#tbar .tbs{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
 #tbar.up .tt{color:#f6b25a}
 #tbar.brk .tt,#tsaver.brk .tsv-time{color:#2dd4bf}
 #tbar.pz .tt,#tsaver.pz .tsv-time{opacity:.55}
-.tb{border:0;border-radius:999px;padding:9px 15px;font:600 14px var(--font-b);cursor:pointer;background:rgba(127,127,127,.3);color:inherit}
+.tb{grid-column:span 2;min-height:44px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.15;border:0;border-radius:14px;padding:0 8px;font:600 14px var(--font-b);cursor:pointer;background:rgba(127,127,127,.3);color:inherit}
+.tb svg{width:22px;height:22px;display:block}
+.tb:disabled{opacity:.4;cursor:not-allowed}
 .tb.p{background:var(--learnt);color:var(--on)}
 .tb.hide{display:none}
 #tsaver{position:fixed;inset:0;z-index:100;background:#080d1a;color:#e8edf7;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;padding-top:calc(24px + env(safe-area-inset-top,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
@@ -47,10 +49,10 @@ body.has-timer{padding-bottom:170px}
 .tsv-bar{height:6px;border-radius:6px;background:#26324d;overflow:hidden;margin:0 auto 18px;max-width:560px}
 .tsv-bar i{display:block;height:100%;background:#2dd4bf;width:100%;transition:width 1s linear}
 .tsv-sub{color:#97a4bf;margin:0 0 22px;min-height:1.5em}
-.tsv-btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
-.tsv-btns .tb{min-height:52px;padding:0 22px;border-radius:16px;font-size:16px;background:#18223a;color:#e8edf7;border:1px solid #33415f}
+.tsv-btns{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;max-width:560px;margin:0 auto}
+.tsv-btns .tb{min-height:58px;padding:0 8px;border-radius:16px;font-size:15px;background:#18223a;color:#e8edf7;border:1px solid #33415f}
 .tsv-btns .tb.p{background:#2dd4bf;color:#0b1020;border:0}
-.tsv-btns .tb.hide{display:none}
+.tsv-btns .tb:nth-child(n+4){grid-column:span 3}
 #tsaver.up .tsv-time{color:#f6b25a}
 #tsaver.up .tsv-bar i{background:#f6b25a}
 .ttoast{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;z-index:120;max-width:90%;font-weight:600;text-align:center}
@@ -118,12 +120,27 @@ function add(m) {
 }
 
 /* ----- display ----- */
+var PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4.5" width="4.2" height="15" rx="1.4" fill="currentColor"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1.4" fill="currentColor"/></svg>';
+var PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4.8v14.4a1 1 0 0 0 1.5.9l11.2-7.2a1 1 0 0 0 0-1.7L9.5 3.9A1 1 0 0 0 8 4.8z" fill="currentColor"/></svg>';
 function btns(inSaver) {
-  return '<button class="tb" data-ta="add5">+5 min</button><button class="tb" data-ta="add10">+10 min</button>' +
-    '<button class="tb" data-ta="pause" data-tm="pausebtn">Pause</button><button class="tb" data-ta="doubt">Note a doubt</button>' +
+  return '<button class="tb" data-ta="pause" data-tm="pausebtn" aria-label="Pause" title="Pause">' + PAUSE + "</button>" +
+    '<button class="tb" data-ta="addtime">Add time</button>' +
+    '<button class="tb" data-ta="doubt">Note a doubt</button>' +
     '<button class="tb p" data-ta="early" data-tm="earlylabel">Finished early</button>' +
     (inSaver ? '<button class="tb" data-ta="exit">Exit screen saver</button>'
              : '<button class="tb" data-ta="saver">Screen saver</button><button class="tb" data-ta="cancel">Cancel timer</button>');
+}
+function addSheet() {
+  if (document.querySelector(".tadd")) return;
+  var m = el("div", "tmodal tadd", '<div class="tcard" role="dialog" aria-modal="true" aria-label="Add time"><h2>Add time</h2><p class="tsub">How much more time do you need?</p>' +
+    '<div class="topts" style="display:grid;grid-template-columns:repeat(3,1fr)">' + [5, 10, 15].map(function (n) { return '<button type="button" class="topt" data-addm="' + n + '">+' + n + " min</button>"; }).join("") +
+    '</div><div class="tbtns" style="margin-top:12px"><button type="button" class="linkbtn" data-addx>Cancel</button></div></div>');
+  m.style.zIndex = "140"; document.body.appendChild(m);
+  m.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-addm]");
+    if (b) { m.remove(); if (T) add(+b.dataset.addm); return; }
+    if (e.target === m || e.target.closest("[data-addx]")) m.remove();
+  });
 }
 function fill(root) {
   root.querySelectorAll('[data-tm="ch"]').forEach(function (n) { n.textContent = T.c; });
@@ -146,6 +163,117 @@ function update() {
   var q = function (s, f) { document.querySelectorAll('[data-tm="' + s + '"]').forEach(f); };
   q("time", function (n) { n.textContent = clock(r); });
   q("status", function (n) { n.textContent = up ? "Time is up. Add more time or finish." : pz ? "Paused" : br ? "Break time, rest your eyes" : T.pomo ? "Study block" : "Keep going"; });
+  q("earlylabel", function (n) { n.textContent = up ? "I am done" : "Finished early"; });
+  q("pausebtn", function (n) { var w = pz ? "Resume" : "Pause"; if (n.getAttribute("aria-label") !== w) { n.innerHTML = pz ? PLAY : PAUSE; n.setAttribute("aria-label", w); n.title = w; } n.disabled = up; });
+  q("fill", function (n) { n.style.width = (up ? 0 : Math.max(0, Math.min(100, r / T.plen * 100))) + "%"; });
+  [bar, sv].forEach(function (n) { if (n) { n.classList.toggle("up", up); n.classList.toggle("brk", br); n.classList.toggle("pz", pz); } });
+  document.title = (up ? "Time is up - " : (br ? "Break " : "") + clock(r) + " - ") + "Academic Tracker";
+  if (sv && r % 60 === 0) nudge();
+}
+function startLoop() { if (!loopId) loopId = setInterval(update, 1000); update(); }
+function stopLoop() { if (loopId) { clearInterval(loopId); loopId = null; } }
+
+function wake() { try { if (navigator.wakeLock && sv) navigator.wakeLock.request("screen").then(function (l) { lock = l; }).catch(function () {}); } catch (e) {} }
+function openSaver() {
+  if (sv || !T) return;
+  sv = el("div", "", '<div class="tsv-in"><div class="tsv-ex" data-tm="ex"></div><div class="tsv-ch" data-tm="ch"></div><div class="tsv-time" data-tm="time">00:00</div><div class="tsv-bar"><i data-tm="fill"></i></div><p class="tsv-sub" data-tm="status"></p><div class="tsv-btns">' + btns(true) + "</div></div>");
+  sv.id = "tsaver"; document.body.appendChild(sv); fill(sv);
+  if (bar) bar.style.display = "none";
+  try { var f = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (f && f.catch) f.catch(function () {}); } catch (e) {}
+  wake(); update();
+}
+function closeSaver() {
+  if (!sv) return;
+  sv.remove(); sv = null; if (bar) bar.style.display = "";
+  try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); } catch (e) {}
+  try { if (lock) lock.release(); lock = null; } catch (e) {}
+}
+function goHome() { if (location.hash) location.hash = ""; else if (typeof route === "function") route(); }
+function clear() {
+  closeSaver(); T = null; save(); stopLoop();
+  if (bar) { bar.remove(); bar = null; }
+  document.body.classList.remove("has-timer"); document.title = "Academic Tracker";
+}
+function logIt(t, secs) { if (window.StudyLog && secs >= 30) window.StudyLog.add(t.s, secs); }
+function finish() {
+  var t = T, secs = studiedSecs(), mins = Math.max(1, Math.round(secs / 60));
+  clear(); logIt(t, secs);
+  try { if (typeof setSt === "function") setSt(t.s, t.c, t.k, true); } catch (e) {}
+  toast(t.c + " done. Studied for " + mins + " min.");
+  if (typeof route === "function") route();
+}
+function act(a) {
+  if (!T) return;
+  if (a === "addtime") addSheet();
+  else if (a === "pause") pause();
+  else if (a === "doubt") { if (window.Doubts) window.Doubts.ask(T.s, T.c); }
+  else if (a === "early") finish();
+  else if (a === "cancel") {
+    if (confirm("Cancel this timer without marking the chapter? Time already studied is still saved to your study log.")) { var t = T, s = studiedSecs(); clear(); logIt(t, s); }
+  }
+  else if (a === "saver") openSaver();
+  else if (a === "exit") { closeSaver(); goHome(); }
+}
+
+function begin(s, c, k, ex, mins, saver, pomo) {
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  var now = Date.now(), b = mins * 60, len = pomo ? Math.min(POMO, b) : b;
+  T = { s: s, c: c, k: k, ex: ex, at: now, pomo: pomo ? 1 : 0, budget: b, studied: 0, phase: "study", seg: now, pend: now + len * 1000, plen: len, pl: 0, paused: false, fin: false };
+  if (window.PlanTime) window.PlanTime.set(s, c, mins);
+  try { localStorage.setItem("pomo", pomo ? "1" : "0"); } catch (e) {}
+  save(); buildBar(); startLoop(); if (saver) openSaver();
+}
+function ask(s, c, k) {
+  if (T) { toast("A timer is already running."); return; }
+  var ex = ""; try { ex = (upcoming()[0] || {}).name || ""; } catch (e) {}
+  var hard = !!(window.HardFlags && window.HardFlags.is(s, c)), sel = hard ? 45 : 30, pm = false;
+  try { pm = localStorage.getItem("pomo") === "1"; } catch (e) {}
+  var m = el("div", "tmodal",
+    '<div class="tcard" role="dialog" aria-modal="true" aria-label="Study timer"><h2>How much time do you need?</h2>' +
+    '<p class="tsub"><b>' + c + "</b><br>" + s + (ex ? ", " + ex : "") + "</p>" +
+    (hard ? '<p class="thard">Starred as hard, so more time (45 min) is suggested.</p>' : "") +
+    '<div class="topts">' + [15, 30, 45, 60, 90].map(function (n) { return '<button class="topt' + (n === sel ? " on" : "") + '" data-min="' + n + '">' + n + " min</button>"; }).join("") + "</div>" +
+    '<label class="tcustom">Or type minutes <input type="number" min="1" max="600" inputmode="numeric" id="tmin" placeholder="e.g. 40"></label>' +
+    '<label class="tpomo"><input type="checkbox" id="tpomo"' + (pm ? " checked" : "") + '><span>Pomodoro mode<small>25 min study, 5 min break, repeated until your time is used.</small></span></label>' +
+    '<div class="tbtns"><button class="go2" data-tgo="0">Start timer</button><button class="ghost" data-tgo="1">Start in screen saver mode</button><button class="linkbtn" data-tcancel>Cancel</button></div></div>');
+  document.body.appendChild(m);
+  var inp = m.querySelector("#tmin");
+  inp.addEventListener("input", function () { m.querySelectorAll(".topt").forEach(function (x) { x.classList.remove("on"); }); });
+  m.addEventListener("click", function (e) {
+    var o = e.target.closest(".topt");
+    if (o) { sel = +o.dataset.min; inp.value = ""; m.querySelectorAll(".topt").forEach(function (x) { x.classList.toggle("on", x === o); }); return; }
+    if (e.target === m || e.target.closest("[data-tcancel]")) { m.remove(); return; }
+    var g = e.target.closest("[data-tgo]");
+    if (g) { var v = parseInt(inp.value, 10), mins = v > 0 ? Math.min(v, 600) : sel, pomo = m.querySelector("#tpomo").checked; m.remove(); begin(s, c, k, ex, mins, g.dataset.tgo === "1", pomo); }
+  });
+}
+
+document.addEventListener("click", function (e) {
+  var b = e.target.closest && e.target.closest("[data-timer]");
+  if (b) { var p = b.dataset.timer.split("|"); ask(p[0], p[1], p[2] || "learnt"); return; }
+  var a = e.target.closest && e.target.closest("[data-ta]");
+  if (a) act(a.dataset.ta);
+});
+document.addEventListener("keydown", function (e) { if (e.key === "Escape" && sv) closeSaver(); });
+document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") { if (sv) wake(); if (T) update(); } });
+
+function enhance() {
+  document.querySelectorAll(".row.plan [data-plan]").forEach(function (chip) {
+    var row = chip.closest(".row"); if (!row || row.querySelector(".tstart")) return;
+    var b = el("button", "tstart", ICON); b.type = "button";
+    b.setAttribute("data-timer", chip.dataset.plan + "|" + (chip.dataset.k || "learnt"));
+    b.setAttribute("aria-label", "Start a study timer");
+    row.classList.add("hastimer"); row.insertBefore(b, chip);
+  });
+}
+var appEl = document.getElementById("app");
+if (appEl) new MutationObserver(enhance).observe(appEl, { childList: true, subtree: true });
+enhance();
+
+T = load();
+if (T && T.budget) { buildBar(); startLoop(); } else { T = null; save(); }
+})();
+ "Break time, rest your eyes" : T.pomo ? "Study block" : "Keep going"; });
   q("earlylabel", function (n) { n.textContent = up ? "I am done" : "Finished early"; });
   q("pausebtn", function (n) { n.textContent = pz ? "Resume" : "Pause"; n.classList.toggle("hide", up); });
   q("fill", function (n) { n.style.width = (up ? 0 : Math.max(0, Math.min(100, r / T.plen * 100))) + "%"; });
