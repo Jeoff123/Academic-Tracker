@@ -49,4 +49,7 @@ body.has-timer{padding-bottom:170px}
 #tsaver.up .tsv-time{color:#f6b25a}
 #tsaver.up .tsv-bar i{background:#f6b25a}
 .ttoast{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;z-index:120;max-width:90%;font-weight:600;text-align:center}
-        
+.tpcfg{display:flex;flex-wrap:wrap;gap:12px 18px;margin:-2px 0 14px}
+.tpcfg[hidden]{display:none}
+.tpcfg label{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.tpcfg input{width:76px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
