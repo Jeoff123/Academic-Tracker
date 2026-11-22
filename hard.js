@@ -69,11 +69,11 @@ function enhance() {
       i.querySelector(".sp").setAttribute("style", "fill:currentColor");
       row.firstElementChild.insertBefore(i, row.firstElementChild.firstChild);
     }
-    if (chip.getAttribute("aria-pressed") !== "true") { n++; total += window.PlanTime.get(p[0], p[1]) || (hard ? 45 : 30); }
+    if (chip.getAttribute("aria-pressed") !== "true") { n++; total += window.PlanTime.get(p[0], p[1]) || (hard ? 90 : 60); }
   });
   var gp = document.querySelector("#app [data-goplan]"), head = gp && gp.parentElement;
   if (head && any) {
-    var txt = n ? "Time needed today: about " + fmtm(total) + " for " + n + " chapter" + (n > 1 ? "s" : "") + ". Based on the times you set, otherwise 30 min per chapter (45 for starred hard ones)."
+    var txt = n ? "Time needed today: about " + fmtm(total) + " for " + n + " chapter" + (n > 1 ? "s" : "") + ". Based on the times you set, otherwise 1 h per chapter (1 h 30 min for starred hard ones)."
                 : "All of today's plan is done.";
     var old = document.querySelector("#app .ptime");
     if (!old) { old = document.createElement("p"); old.className = "hint ptime"; head.insertAdjacentElement("afterend", old); }
