@@ -81,4 +81,5 @@ function enhance() {
 var appEl = document.getElementById("app");
 if (appEl) new MutationObserver(enhance).observe(appEl, { childList: true, subtree: true });
 enhance();
+window.__reward = 1;
 })();
