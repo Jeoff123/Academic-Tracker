@@ -16,6 +16,10 @@
      } }
    Use  chapters: "all"  when an exam covers a subject's whole syllabus.
 
+   An exam can also list "extra" papers with no chapters (for example a language theory paper):
+     extra: { "Part II Languages": { date: "2026-12-10", note: "Theory exam, no fixed chapters" } }
+   These show only in the timetable, not in the study plan.
+
    Practicals or other dated events (no chapters, shown only in the timetable):
    SYLLABUS["Board-Stream"].events = [ { name: "Board Practicals", dates: ["2027-01-06", "2027-01-07"] } ];
    A date can also carry a note:  { date: "2027-01-06", note: "Physics practical" }
@@ -82,6 +86,7 @@ const SYLLABUS = {
     subjects: {},
     exams: [
       { name: "Christmas exam",
+        extra: { "Part II Languages": { date: "2026-12-10", note: "Theory exam, no fixed chapters" } },
         papers: {
           "Physics":     { date: "2026-12-09", chapters: "all" },
           "Mathematics": { date: "2026-12-11", chapters: "all" },
@@ -95,6 +100,7 @@ const SYLLABUS = {
     subjects: {},
     exams: [
       { name: "Christmas exam",
+        extra: { "Part II Languages": { date: "2026-12-10", note: "Theory exam, no fixed chapters" } },
         papers: {
           "Physics":     { date: "2026-12-09", chapters: "all" },
           "Mathematics": { date: "2026-12-11", chapters: "all" },
@@ -126,8 +132,3 @@ SYLLABUS["State-PCMC"].subjects = {
 const CBSE_PRACTICALS = { name: "Board Practicals", dates: ["2027-01-06","2027-01-07","2027-01-08","2027-01-11","2027-01-12","2027-01-13","2027-01-14","2027-01-15"] };
 SYLLABUS["CBSE-PCMC"].events = [CBSE_PRACTICALS];
 SYLLABUS["CBSE-PCMB"].events = [CBSE_PRACTICALS];
-
-// State board: Part II Language paper (no chapters, so it only appears in the timetable)
-const STATE_PART2 = { name: "Part II Language exam", label: "Part II Languages", dates: [{ date: "2026-12-10", note: "Christmas exam, forenoon" }] };
-SYLLABUS["State-PCMC"].events = [STATE_PART2];
-SYLLABUS["State-PCMB"].events = [STATE_PART2];
