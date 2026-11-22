@@ -7,34 +7,43 @@
 <link rel="icon" type="image/png" href="logo.png?v=1">
 <link rel="apple-touch-icon" href="logo.png?v=1">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=27">
+<link rel="stylesheet" href="style.css?v=28">
+<link rel="stylesheet" href="timer.css?v=28">
 </head>
 <body>
 <main id="app"></main>
 <script>
-/* If something goes wrong, show the reason instead of a blank page */
-addEventListener("error",function(e){
+/* If something goes wrong, show the reason instead of a blank page or a missing feature */
+function showProblem(msg){
   var m=document.getElementById("app");
-  if(!m||m.innerHTML.trim())return;
+  if(m&&!m.innerHTML.trim()){m.innerHTML='<h1 style="font-family:sans-serif">Academic Tracker</h1><p style="font-family:sans-serif;line-height:1.5">'+msg+' Upload the file again as a file (do not paste its text), then hard refresh. If it still fails, contact Jeoff.</p>';return}
+  var b=document.getElementById("errbar");
+  if(!b){b=document.createElement("div");b.id="errbar";b.setAttribute("style","position:fixed;left:0;right:0;top:0;z-index:300;background:#c2410c;color:#fff;padding:10px 14px;font:600 14px/1.4 sans-serif;text-align:center");document.body.appendChild(b);b.onclick=function(){b.remove()}}
+  b.textContent=msg+" Upload that file again, then hard refresh. (tap to close)";
+}
+addEventListener("error",function(e){
   var f=function(s){return String(s||"").split("/").pop().split("?")[0]};
-  var cut=/end of input/i.test(e.message||"");var t=e.target&&e.target.src?"Could not load "+f(e.target.src):(e.message||"Unknown error")+" ("+f(e.filename)+", line "+e.lineno+")";
-  m.innerHTML='<h1 style="font-family:sans-serif">Academic Tracker</h1><p style="font-family:sans-serif;line-height:1.5">The page could not load: '+t+'. '+(cut?' This file looks cut off. Upload it again as a file (do not paste its text).':'')+' Try a hard refresh. If it still fails, contact Jeoff.</p>';
+  var cut=/end of input/i.test(e.message||"");
+  var t=e.target&&e.target.src?"Could not load "+f(e.target.src)+".":"A script error in "+f(e.filename)+" (line "+e.lineno+")"+(cut?": the file looks cut off.":".");
+  showProblem(t);
 },true);
 </script>
-<script src="data.js?v=27"></script>
-<script src="app.js?v=27"></script>
-<script src="app2.js?v=27"></script>
-<script src="hard.js?v=27"></script>
-<script src="edit.js?v=27"></script>
-<script src="timer.js?v=27"></script>
-<script src="log.js?v=27"></script>
-<script src="doubts.js?v=27"></script>
-<script src="week.js?v=27"></script>
-<script src="reward.js?v=27"></script>
-<script src="nav.js?v=27"></script>
+<script src="data.js?v=28"></script>
+<script src="app.js?v=28"></script>
+<script src="app2.js?v=28"></script>
+<script src="hard.js?v=28"></script>
+<script src="edit.js?v=28"></script>
+<script src="timer.js?v=28"></script>
+<script src="log.js?v=28"></script>
+<script src="doubts.js?v=28"></script>
+<script src="week.js?v=28"></script>
+<script src="reward.js?v=28"></script>
+<script src="nav.js?v=28"></script>
 <script>
-if(window.__start)window.__start();
-else{var m=document.getElementById("app");if(m&&!m.innerHTML.trim())m.innerHTML='<h1 style="font-family:sans-serif">Academic Tracker</h1><p style="font-family:sans-serif;line-height:1.5">The page could not start because app.js or app2.js is missing or incomplete. Upload both files again (upload the files, do not paste their text), then hard refresh. If it still fails, contact Jeoff.</p>'}
+if(window.__start)window.__start();else showProblem("The page could not start because app.js or app2.js is missing or incomplete.");
+var need=[["app.js",window.setRings],["app2.js",window.route],["hard.js",window.HardFlags],["edit.js",window.__edit],["timer.js",window.__timer],["log.js",window.StudyLog],["doubts.js",window.Doubts],["week.js",window.__week],["reward.js",window.__reward],["nav.js",document.getElementById("bnav")]];
+var miss=need.filter(function(x){return !x[1]}).map(function(x){return x[0]});
+if(miss.length)showProblem("These files did not load fully: "+miss.join(", ")+".");
 </script>
 </body>
 </html>
