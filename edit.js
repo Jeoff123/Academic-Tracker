@@ -54,4 +54,5 @@ savePlan = function () {
   });
   put("custom:" + ID(), { date: new Date().toDateString(), keys: keys });
 };
+window.__edit = 1;
 })();
