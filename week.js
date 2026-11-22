@@ -180,4 +180,5 @@ document.addEventListener("click", function (e) {
     var on = at === -1; a.classList.toggle("on", on); a.setAttribute("aria-pressed", on);
   }
 });
+window.__week = 1;
 })();
