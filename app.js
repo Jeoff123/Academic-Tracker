@@ -178,4 +178,4 @@ function examPage(i,only){
   }).join("");
   app.innerHTML=`<div class="subtop"><button class="back" data-backto="${fromHash}">${CHEV}Back</button>${reloadBtn}</div><section class="shead" id="shead">${wrap(112,19)}<div><h2 tabindex="-1">${e.name}${only&&ps.length===1?": "+ps[0].s:""}</h2>${legend()}</div></section>${body}<p class="note">${CONTACT}</p>`;
   paintExam();
-                          }
+      }
