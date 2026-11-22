@@ -78,8 +78,32 @@ const SYLLABUS = {
   },
   // State board entries are filled below from the CBSE lists (same chapter names).
   // Exams stay separate for every board and batch.
-  "State-PCMC": { subjects: {}, exams: [] },
-  "State-PCMB": { subjects: {}, exams: [] }
+  "State-PCMC": {
+    subjects: {},
+    exams: [
+      { name: "Christmas exam",
+        papers: {
+          "Physics":     { date: "2026-12-09", chapters: "all" },
+          "Mathematics": { date: "2026-12-11", chapters: "all" },
+          "Chemistry":   { date: "2026-12-14", chapters: "all" },
+          "Computer Science": { date: "2026-12-16", chapters: "all" },
+          "English":     { date: "2026-12-17", chapters: "all" }
+        } }
+    ]
+  },
+  "State-PCMB": {
+    subjects: {},
+    exams: [
+      { name: "Christmas exam",
+        papers: {
+          "Physics":     { date: "2026-12-09", chapters: "all" },
+          "Mathematics": { date: "2026-12-11", chapters: "all" },
+          "Chemistry":   { date: "2026-12-14", chapters: "all" },
+          "Biology": { date: "2026-12-15", chapters: "all" },
+          "English":     { date: "2026-12-17", chapters: "all" }
+        } }
+    ]
+  }
 };
 
 // English is common to all State board batches.
@@ -102,3 +126,8 @@ SYLLABUS["State-PCMC"].subjects = {
 const CBSE_PRACTICALS = { name: "Board Practicals", dates: ["2027-01-06","2027-01-07","2027-01-08","2027-01-11","2027-01-12","2027-01-13","2027-01-14","2027-01-15"] };
 SYLLABUS["CBSE-PCMC"].events = [CBSE_PRACTICALS];
 SYLLABUS["CBSE-PCMB"].events = [CBSE_PRACTICALS];
+
+// State board: Part II Language paper (no chapters, so it only appears in the timetable)
+const STATE_PART2 = { name: "Part II Language exam", label: "Part II Languages", dates: [{ date: "2026-12-10", note: "Christmas exam, forenoon" }] };
+SYLLABUS["State-PCMC"].events = [STATE_PART2];
+SYLLABUS["State-PCMB"].events = [STATE_PART2];
