@@ -8,6 +8,7 @@ function pad(n) { return (n < 10 ? "0" : "") + n; }
 function key(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
 function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 function DK() { return "doubts:" + pid(); }
+function save2(v) { sv(DK(), v); try { window.dispatchEvent(new Event("doubts")); } catch (e) {} }
 function all() { return ld(DK(), []); }
 function ago(iso) {
   var p = iso.split("-"), t = new Date(); t.setHours(0, 0, 0, 0);
@@ -58,7 +59,7 @@ function toast(t) { document.querySelectorAll(".ttoast").forEach(function (o) { 
 window.Doubts = {
   open: function () { return all().filter(function (x) { return !x.x; }); },
   add: function (s, c, t) {
-    var a = all(); a.push({ id: Date.now() + "-" + Math.floor(Math.random() * 100000), s: s, c: c, t: t || "Ask sir about this", d: key(new Date()), x: 0 }); sv(DK(), a);
+    var a = all(); a.push({ id: Date.now() + "-" + Math.floor(Math.random() * 100000), s: s, c: c, t: t || "Ask sir about this", d: key(new Date()), x: 0 }); save2( a);
   },
   ask: function (s, c) {
     if (document.querySelector(".dmodal")) return;
@@ -105,9 +106,9 @@ document.addEventListener("click", function (e) {
   var t = e.target.closest ? e.target : null; if (!t) return;
   if (t.closest("[data-dbcard]")) { location.hash = "doubts"; return; }
   var b = t.closest("[data-dtick]");
-  if (b) { var a = all(); a.forEach(function (x) { if (x.id === b.dataset.dtick) x.x = x.x ? 0 : key(new Date()); }); sv(DK(), a); page(); return; }
+  if (b) { var a = all(); a.forEach(function (x) { if (x.id === b.dataset.dtick) x.x = x.x ? 0 : key(new Date()); }); save2( a); page(); return; }
   b = t.closest("[data-ddel]");
-  if (b && confirm("Delete this doubt?")) { sv(DK(), all().filter(function (x) { return x.id !== b.dataset.ddel; })); page(); }
+  if (b && confirm("Delete this doubt?")) { save2( all().filter(function (x) { return x.id !== b.dataset.ddel; })); page(); }
 });
 
 function enhance() {
