@@ -19,3 +19,15 @@
 .atoast{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;z-index:160;max-width:90%;font-weight:600;text-align:center}
 .wsign{display:block;width:100%;margin:14px 0 0;padding:12px;background:none;border:1px solid var(--line);border-radius:14px;color:var(--revised);font:600 15px var(--font-b);cursor:pointer}
 .wsign:hover{border-color:var(--revised)}
+.afine{color:var(--muted);font-size:13px;text-align:center;margin:12px 0 0}
+.adm{max-width:520px}
+.adq{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:16px var(--font-b);margin:0 0 10px}
+.adrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.adav{flex:none;width:38px;height:38px;border-radius:50%;background:var(--track);color:var(--muted);display:grid;place-items:center;font:700 16px var(--font-d)}
+.adtx{flex:1;min-width:150px}
+.adtx b{display:block;font-weight:600;overflow-wrap:anywhere}
+.adtx small{display:block;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.adtag{display:inline-block;background:var(--revised);color:var(--on);border-radius:999px;font:600 11px var(--font-b);padding:1px 8px;vertical-align:middle}
+.adbt{display:flex;gap:8px;width:100%;padding-left:50px}
+.adb{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:7px 12px;font:600 13px var(--font-b);cursor:pointer}
+.adb.del{color:#c2410c;border-color:rgba(194,65,12,.4)}
