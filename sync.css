@@ -1,0 +1,21 @@
+/* Account and sync styles */
+.amodal{position:fixed;inset:0;z-index:150;background:rgba(10,15,30,.55);display:grid;place-items:center;padding:16px}
+.acard{background:var(--surface);color:var(--ink);border-radius:24px;padding:22px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);max-height:100%;overflow:auto}
+.acard h2{font-size:22px;margin:0 0 6px}
+.asub{color:var(--muted);margin:0 0 14px;line-height:1.45}
+.asub b{color:var(--ink)}
+.afield{display:block;color:var(--muted);font-size:14px;margin:0 0 12px}
+.afield input{display:block;width:100%;margin-top:4px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:16px var(--font-b)}
+.amsg{min-height:1.3em;margin:0 0 10px;font-size:14px;color:var(--pyq);font-weight:600}
+.amsg.ok{color:var(--learnt)}
+.abtns{display:grid;gap:10px}
+.ago,.aghost{min-height:48px;border-radius:14px;font:600 16px var(--font-b);cursor:pointer}
+.ago{border:0;background:var(--revised);color:var(--on)}
+.aghost{border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.ago:disabled,.aghost:disabled{opacity:.5;cursor:wait}
+.alink{background:none;border:0;color:var(--muted);font-weight:600;cursor:pointer;padding:6px;text-decoration:underline;justify-self:center}
+.acctbtn{position:relative;width:44px;height:44px;flex:none;border-radius:50%;background:var(--surface);border:1px solid var(--line);color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0}
+.acctbtn.on::after{content:"";position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;background:var(--learnt);border:2px solid var(--surface)}
+.atoast{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;z-index:160;max-width:90%;font-weight:600;text-align:center}
+.wsign{display:block;width:100%;margin:14px 0 0;padding:12px;background:none;border:1px solid var(--line);border-radius:14px;color:var(--revised);font:600 15px var(--font-b);cursor:pointer}
+.wsign:hover{border-color:var(--revised)}
