@@ -7,10 +7,10 @@
 <link rel="icon" type="image/png" href="logo.png?v=1">
 <link rel="apple-touch-icon" href="logo.png?v=1">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=34">
-<link rel="stylesheet" href="timer.css?v=34">
-<link rel="stylesheet" href="sync.css?v=34">
-<link rel="stylesheet" href="community.css?v=34">
+<link rel="stylesheet" href="style.css?v=35">
+<link rel="stylesheet" href="timer.css?v=35">
+<link rel="stylesheet" href="sync.css?v=35">
+<link rel="stylesheet" href="community.css?v=35">
 </head>
 <body>
 <main id="app"></main>
@@ -30,26 +30,26 @@ addEventListener("error",function(e){
   showProblem(t);
 },true);
 </script>
-<script src="data.js?v=34"></script>
-<script src="app.js?v=34"></script>
-<script src="app2.js?v=34"></script>
-<script src="hard.js?v=34"></script>
-<script src="edit.js?v=34"></script>
-<script src="timer.js?v=34"></script>
-<script src="log.js?v=34"></script>
-<script src="doubts.js?v=34"></script>
-<script src="week.js?v=34"></script>
-<script src="reward.js?v=34"></script>
-<script src="sync.js?v=34"></script>
-<script src="account.js?v=34"></script>
-<script src="admin.js?v=34"></script>
-<script src="nav.js?v=34"></script>
-<script src="chat.js?v=34"></script>
-<script src="qa.js?v=34"></script>
-<script src="community.js?v=34"></script>
+<script src="data.js?v=35"></script>
+<script src="app.js?v=35"></script>
+<script src="app2.js?v=35"></script>
+<script src="hard.js?v=35"></script>
+<script src="edit.js?v=35"></script>
+<script src="timer.js?v=35"></script>
+<script src="log.js?v=35"></script>
+<script src="doubts.js?v=35"></script>
+<script src="week.js?v=35"></script>
+<script src="reward.js?v=35"></script>
+<script src="sync.js?v=35"></script>
+<script src="account.js?v=35"></script>
+<script src="admin.js?v=35"></script>
+<script src="community.js?v=35"></script>
+<script src="qa.js?v=35"></script>
+<script src="chat.js?v=35"></script>
+<script src="nav.js?v=35"></script>
 <script>
 if(window.__start)window.__start();else showProblem("The page could not start because app.js or app2.js is missing or incomplete.");
-var need=[["app.js",window.setRings],["app2.js",window.route],["hard.js",window.HardFlags],["edit.js",window.__edit],["timer.js",window.__timer],["log.js",window.StudyLog],["doubts.js",window.Doubts],["week.js",window.__week],["reward.js",window.__reward],["sync.js",window.__sync],["account.js",window.__account],["admin.js",window.__admin],["nav.js",document.getElementById("bnav")]];
+var need=[["app.js",window.setRings],["app2.js",window.route],["hard.js",window.HardFlags],["edit.js",window.__edit],["timer.js",window.__timer],["log.js",window.StudyLog],["doubts.js",window.Doubts],["week.js",window.__week],["reward.js",window.__reward],["sync.js",window.__sync],["account.js",window.__account],["admin.js",window.__admin],["community.js",window.__comm],["qa.js",window.__qa],["chat.js",window.__chat],["nav.js",document.getElementById("bnav")]];
 var miss=need.filter(function(x){return !x[1]}).map(function(x){return x[0]});
 if(miss.length)showProblem("These files did not load fully: "+miss.join(", ")+".");
 </script>
