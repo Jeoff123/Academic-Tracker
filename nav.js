@@ -1,4 +1,4 @@
-/* Bottom navigation bar: Home, Week, Timetable, Study log, Doubts. */
+/* Bottom navigation bar: Home, Week, Timetable, Study log, Community. */
 (function () {
 "use strict";
 var NAVH = 62;
@@ -7,7 +7,7 @@ var TABS = [
   { id: "home", label: "Home", svg: ic('<path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/>') },
   { id: "week", label: "Week", svg: ic('<path d="M9 7h10M9 12h10M9 17h10"/><circle cx="5" cy="7" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="5" cy="17" r="1"/>') },
   { id: "timetable", label: "Timetable", svg: ic('<rect x="4" y="5.5" width="16" height="14" rx="3"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>') },
-  { id: "doubts", label: "Doubts", svg: ic('<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.6 2.2c-.9.5-1.2 1-1.2 1.9M12 16.8v.1"/>') },
+  { id: "community", label: "Community", svg: ic('<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.5-3.3 2.8-5 5.5-5s5 1.7 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.4.2 4 1.7 4.5 4.3"/>') },
   { id: "log", label: "Study log", svg: ic('<path d="M6 19V11M12 19V5M18 19v-6"/>') }
 ];
 
@@ -33,7 +33,7 @@ var st = document.createElement("style"); st.textContent = css; document.head.ap
 var nav = document.createElement("nav");
 nav.id = "bnav"; nav.setAttribute("aria-label", "Main");
 nav.innerHTML = '<div class="bn-in">' + TABS.map(function (t) {
-  return '<button type="button" data-nav="' + t.id + '"><span class="bn-ic">' + t.svg + (t.id === "doubts" ? '<i class="bn-b" hidden></i>' : "") + "</span><span>" + t.label + "</span></button>";
+  return '<button type="button" data-nav="' + t.id + '"><span class="bn-ic">' + t.svg + (t.id === "community" ? '<i class="bn-b" hidden></i>' : "") + "</span><span>" + t.label + "</span></button>";
 }).join("") + "</div>";
 document.body.appendChild(nav);
 
@@ -41,7 +41,7 @@ function active() {
   var h = location.hash.replace("#", "");
   if (h === "timetable" || h.indexOf("exam-") === 0) return "timetable";
   if (h === "stats") return "log";
-  if (h === "doubts") return "doubts";
+  if (h === "doubts" || h.indexOf("community") === 0) return "community";
   if (h.indexOf("week") === 0) return "week";
   return "home";
 }
@@ -51,8 +51,8 @@ function sync() {
   nav.style.display = on ? "" : "none";
   document.body.classList.toggle("has-nav", on);
   document.documentElement.style.setProperty("--navh", on ? NAVH + "px" : "0px");
-  var cnt = 0; try { cnt = window.Doubts ? window.Doubts.open().length : 0; } catch (e) {}
-  var bd = nav.querySelector('[data-nav="doubts"] .bn-b'); if (bd) { bd.textContent = cnt > 99 ? "99+" : cnt; bd.hidden = !cnt; }
+  var cnt = 0; try { cnt = window.Comm ? window.Comm.unread() : 0; } catch (e) {}
+  var bd = nav.querySelector('[data-nav="community"] .bn-b'); if (bd) { bd.textContent = cnt > 99 ? "99+" : cnt; bd.hidden = !cnt; }
   var a = active();
   nav.querySelectorAll("button").forEach(function (b) {
     if (b.dataset.nav === a) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
@@ -65,10 +65,11 @@ nav.addEventListener("click", function (e) {
   else if (id === "week") location.hash = "week";
   else if (id === "timetable") location.hash = "timetable";
   else if (id === "log") location.hash = "stats";
-  else if (id === "doubts") location.hash = "doubts";
+  else if (id === "community") location.hash = "community";
 });
 window.addEventListener("hashchange", sync);
 window.addEventListener("doubts", sync);
+document.addEventListener("commchange", sync);
 var appEl = document.getElementById("app");
 if (appEl) new MutationObserver(sync).observe(appEl, { childList: true, subtree: true });
 sync();
