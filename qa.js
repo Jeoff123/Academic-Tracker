@@ -105,4 +105,3 @@ document.addEventListener("click", function (e) {
 document.addEventListener("change", function (e) { if (e.target.id === "qun") { F.unans = e.target.checked; load(); } });
 window.__qa = 1;
 })();
-                                                                                                                       
