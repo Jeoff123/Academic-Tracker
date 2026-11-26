@@ -109,4 +109,3 @@ document.addEventListener("keydown", function (e) { if (e.key === "Enter" && e.t
 document.addEventListener("input", function (e) { if (e.target && e.target.id === "cfind") find(e.target.value); });
 window.__chat = 1;
 })();
-      
