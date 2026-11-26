@@ -75,13 +75,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 function enhance() {
-  var a = document.getElementById("app"), go = a && a.querySelector("#go");
-  if (go && !a.querySelector(".wsign")) {
-    var w = document.createElement("button"); w.type = "button"; w.className = "wsign"; w.setAttribute("data-acct", "");
-    w.textContent = C.S() ? "Signed in. Tap to manage your account" : "Already have an account? Sign in to restore your progress";
-    go.insertAdjacentElement("afterend", w);
-  }
-  var tl = a && a.querySelector(".top .tools");
+  var a = document.getElementById("app"), tl = a && a.querySelector(".top .tools");
   if (!tl || tl.querySelector(".acctbtn")) return;
   var b = document.createElement("button"); b.type = "button"; b.className = "acctbtn"; b.setAttribute("data-acct", ""); b.setAttribute("aria-label", "Account"); b.innerHTML = PERSON;
   tl.insertBefore(b, tl.querySelector("[data-reload]") || null); refreshBtn();
@@ -94,4 +88,3 @@ document.addEventListener("sbchange", function () { refreshBtn(); updateStatus()
 refreshBtn();
 window.__account = 1;
 })();
-                                                                                                       
