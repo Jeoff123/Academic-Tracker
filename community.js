@@ -21,11 +21,12 @@ var C = window.Comm = {
   setUnread: function (n) { if (n !== C.unreadN) { C.unreadN = n; document.dispatchEvent(new Event("commchange")); } }
 };
 
-var TABS = [["board", "Ranking", "community"], ["doubts", "Doubts", "community-doubts"], ["chat", "Chat", "community-chat"]];
+var TABS = [["board", "Ranking", "community"], ["doubts", "Doubts", "community-doubts"]];
+var ICO = '<svg viewBox="0 0 20 20" width="19" height="19" aria-hidden="true"><path d="M4.5 5.5h11a1.5 1.5 0 0 1 1.5 1.5v5a1.5 1.5 0 0 1-1.5 1.5H10l-3.5 3v-3h-2A1.5 1.5 0 0 1 3 12V7a1.5 1.5 0 0 1 1.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 function hub(tab, arg) {
   try { cur = null; view = null; } catch (e) {}
-  app.innerHTML = '<div class="subtop"><h1 tabindex="-1">Community</h1>' + reloadBtn + '</div><div class="cseg" role="tablist">' +
-    TABS.map(function (t) { return '<button type="button" role="tab" class="cs' + (t[0] === tab ? " on" : "") + '" data-cgo="' + t[2] + '">' + t[1] + (t[0] === "chat" && C.unreadN ? '<i class="cdot"></i>' : "") + "</button>"; }).join("") + '</div><div id="cbody"></div>';
+  app.innerHTML = '<div class="subtop"><h1 tabindex="-1">Community</h1><span class="subr"><button type="button" class="chico" data-cgo="community-chat" aria-label="Messages">' + ICO + (C.unreadN ? '<i class="cdot"></i>' : "") + "</button>" + reloadBtn + '</span></div><div class="cseg" role="tablist">' +
+    TABS.map(function (t) { return '<button type="button" role="tab" class="cs' + (t[0] === tab ? " on" : "") + '" data-cgo="' + t[2] + '">' + t[1] + "" + "</button>"; }).join("") + '</div><div id="cbody"></div>';
   var body = document.getElementById("cbody");
   if (!me()) { body.innerHTML = '<div class="empty"><b>Sign in to join</b>The ranking, shared doubts and chat are for signed-in students.<div style="margin-top:12px"><button type="button" class="csign" data-acct>Sign in or create an account</button></div></div>'; return; }
   if (mods[tab]) mods[tab](body, arg);
@@ -37,6 +38,7 @@ route = function () {
   if (m && typeof profile !== "undefined" && profile) { hub(m[1] || "board", m[2] || ""); window.scrollTo(0, 0); return; }
   return _r.apply(this, arguments);
 };
+document.addEventListener("commchange", function () { var b = document.querySelector(".chico"); if (!b) return; var d = b.querySelector(".cdot"); if (C.unreadN && !d) b.insertAdjacentHTML("beforeend", '<i class="cdot"></i>'); else if (!C.unreadN && d) d.remove(); });
 document.addEventListener("sbchange", function () { var now = !!me(); if (now !== wasIn) { wasIn = now; if (/^#community/.test(location.hash)) route(); } });
 document.addEventListener("click", function (e) {
   var b = e.target.closest ? e.target.closest("[data-cgo]") : null; if (b) location.hash = b.dataset.cgo;
@@ -101,4 +103,3 @@ document.addEventListener("change", function (e) {
 });
 window.__comm = 1;
 })();
-    
