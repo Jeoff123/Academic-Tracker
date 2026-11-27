@@ -51,7 +51,7 @@ function sync() {
   nav.style.display = on ? "" : "none";
   document.body.classList.toggle("has-nav", on);
   document.documentElement.style.setProperty("--navh", on ? NAVH + "px" : "0px");
-  var cnt = 0; try { cnt = window.Comm ? window.Comm.unread() : 0; } catch (e) {}
+  var cnt = 0; try { cnt = 0; } catch (e) {}
   var bd = nav.querySelector('[data-nav="community"] .bn-b'); if (bd) { bd.textContent = cnt > 99 ? "99+" : cnt; bd.hidden = !cnt; }
   var a = active();
   nav.querySelectorAll("button").forEach(function (b) {
